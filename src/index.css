@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Supreme", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-signature: "Mrs Saint Delafield", cursive;
+  --font-didone: "DM Serif Display", "Times New Roman", serif;
+
+  --color-accent: #3b82f6;
+  --color-accent-soft: #93c5fd;
+  --color-accent-deep: #1d4ed8;
+
+  --animate-aurora: aurora 14s ease-in-out infinite alternate;
+  --animate-spin-slow: spin 22s linear infinite;
+
+  @keyframes aurora {
+    0% { transform: translate(0) scale(1); }
+    50% { transform: translate(6%, -4%) scale(1.15); }
+    100% { transform: translate(-5%, 5%) scale(1.05); }
+  }
+}
+
+/* ---------- Theme surface tokens ---------- */
+:root {
+  color-scheme: dark;
+  --grid-dot: rgb(255 255 255 / 0.09);
+  --grid-line: rgb(255 255 255 / 0.05);
+  --toggle-bg: rgb(10 10 12 / 0.55);
+
+  /* Component tokens: anything that is not a plain text/surface colour. */
+  --signature-1: #ffffff;
+  --signature-2: #e0ecff;
+  --signature-3: #93c5fd;
+  --bubble-core: rgb(10 10 12 / 0.92);
+  --bubble-border: rgb(255 255 255 / 0.1);
+  --bubble-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 20px 40px -20px rgb(0 0 0 / 0.8);
+  --critter-ear: #ffffff;
+  --critter-eye: #ffffff;
+  --critter-outline: transparent;
+  --critter-pupil: #000000;
+  --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(148 170 200 / 0.55) 0%, rgb(51 65 85 / 0.55) 32%,
+      rgb(8 11 20 / 0.95) 68%, #04060b 100%);
+  --orb-border: rgb(255 255 255 / 0.15);
+}
+
+/* Light theme re-maps the palette so the dark-first utilities keep working. */
+body.light {
+  color-scheme: light;
+  --color-white: #0b1220;
+  --color-black: #f4f7fc;
+  --color-zinc-100: #0f172a;
+  --color-zinc-200: #1e293b;
+  --color-zinc-300: #334155;
+  --color-zinc-400: #475569;
+  --color-zinc-500: #64748b;
+  --color-zinc-600: #94a3b8;
+  --color-zinc-700: #cbd5e1;
+  --color-zinc-800: #e2e8f0;
+  --color-zinc-900: #ffffff;
+  --color-zinc-950: #f8fafc;
+  --grid-dot: rgb(15 23 42 / 0.12);
+  --grid-line: rgb(15 23 42 / 0.06);
+  --toggle-bg: rgb(255 255 255 / 0.7);
+
+  /* Pale blue text is unreadable on a light page: use a deeper blue. */
+  --color-accent-soft: #2563eb;
+
+  --signature-1: #0b1220;
+  --signature-2: #1e3a8a;
+  --signature-3: #2563eb;
+  --bubble-core: rgb(255 255 255 / 0.96);
+  --bubble-border: rgb(15 23 42 / 0.08);
+  --bubble-shadow: inset 0 -8px 18px rgb(15 23 42 / 0.05), 0 16px 30px -18px rgb(15 23 42 / 0.45);
+  --critter-ear: #0f172a;
+  --critter-eye: #ffffff;
+  --critter-outline: #0f172a;
+  --critter-pupil: #0f172a;
+  --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(147 197 253 / 0.55) 0%, rgb(219 234 254 / 0.7) 38%,
+      rgb(255 255 255 / 0.92) 75%, #ffffff 100%);
+  --orb-border: rgb(37 99 235 / 0.2);
+}
+html:has(body.light) { background: #f4f7fc; }
+
+/* Surfaces that must stay dark in both themes (terminal…). */
+.keep-dark {
+  --color-white: #fff;
+  --color-black: #000;
+  --color-zinc-300: oklch(87.1% 0.006 286.286);
+  --color-zinc-400: oklch(70.5% 0.015 286.067);
+  --color-zinc-500: oklch(55.2% 0.016 285.938);
+  --color-zinc-800: oklch(27.4% 0.006 286.033);
+  --color-zinc-900: oklch(21% 0.006 285.885);
+}
+
+/* ---------- Base ---------- */
+html {
+  background: var(--color-black);
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+::selection { color: var(--color-white); background: rgb(59 130 246 / 0.45); }
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+
+@layer base {
+  :where(a, button, input, textarea, select, [role="tab"]) {
+    transition-property: color, background-color, border-color, box-shadow, fill, stroke;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Lenis smooth scroll */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* ---------- Decorative backgrounds ---------- */
+.bg-dots {
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.bg-lines {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+/*
+ * Radial fade for the dot/line patterns. Instead of mask-image (which forces a
+ * separate GPU render surface for every full-section layer), paint a gradient of
+ * the page colour on top of the pattern: visually identical, far cheaper to raster.
+ */
+.bg-dots.mask-radial {
+  background-image:
+    radial-gradient(70% 60% at 50% 50%, transparent 30%, var(--color-black) 100%),
+    radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 100% 100%, 26px 26px;
+}
+.bg-lines.mask-radial {
+  background-image:
+    radial-gradient(70% 60% at 50% 50%, transparent 30%, var(--color-black) 100%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 100% 100%, 64px 64px, 64px 64px;
+}
+.mask-fade-y {
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+
+/* ---------- Glow card: cursor-following light ---------- */
+/* Layered so utilities such as `absolute` on a card can override the default position. */
+@layer components {
+  .glow-card {
+    position: relative;
+    isolation: isolate;
+    transition: box-shadow 0.4s, border-color 0.4s, background-color 0.4s,
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+.glow-card::before,
+.glow-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.glow-card::before {
+  z-index: -1;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(59 130 246 / 0.12),
+    transparent 45%
+  );
+}
+.glow-card::after {
+  padding: 1px;
+  background: radial-gradient(
+    520px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(147 197 253 / 0.45),
+    transparent 40%
+  );
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.glow-card:hover::before,
+.glow-card:hover::after,
+.glow-card:focus-within::before,
+.glow-card:focus-within::after { opacity: 1; }
+
+body.light .glow-card {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 12px 32px -14px rgb(15 23 42 / 0.16);
+}
+
+/* ---------- Theme helpers ---------- */
+.theme-toggle {
+  color: var(--color-white);
+  background: var(--toggle-bg);
+  border-color: color-mix(in oklab, var(--color-white) 18%, transparent);
+}
+body.light .lanyard-layer canvas { filter: drop-shadow(0 0 1.5px rgb(15 23 42 / 0.75)); }
+
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition: background-color 0.6s, color 0.6s, border-color 0.6s, fill 0.6s, stroke 0.6s,
+    box-shadow 0.6s;
+}
+
+@keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+#root { animation: page-in 0.9s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
