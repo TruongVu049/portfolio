@@ -1,14 +1,16 @@
 import { useEffect } from 'react'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Lock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Lock } from 'lucide-react'
 import { FiGithub } from 'react-icons/fi'
 import Reveal from '../ui/Reveal'
 import GlowCard from '../ui/GlowCard'
 import { PROJECTS } from '../../data/projects'
 import { caseStudyHref, leaveCaseStudy } from '../../hooks/useCaseStudyRoute'
 import { ProjectBadge } from './ProjectDetail'
+import ArchitectureFlow from './ArchitectureFlow'
+import { ProjectVisual } from './visuals'
 
 const pad = (n) => String(n).padStart(2, '0')
-const LABEL = 'font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-500'
+const LABEL = 'font-mono text-xs uppercase tracking-[0.25em] text-zinc-400'
 
 function useDocumentTitle(title) {
   useEffect(() => {
@@ -140,27 +142,6 @@ function ChallengeList({ challenges }) {
   )
 }
 
-/** Request path through the system, left to right on wide screens and top to bottom on phones. */
-function FlowDiagram({ nodes }) {
-  return (
-    <ol className="flex flex-col items-stretch gap-2 md:flex-row md:items-center" aria-label="Request flow">
-      {nodes.map((node, i) => (
-        <li key={node} className="flex flex-col items-center gap-2 md:flex-1 md:flex-row">
-          <span className="w-full rounded-2xl border border-white/10 bg-zinc-900/90 px-4 py-5 text-center font-mono text-xs leading-5 text-zinc-200 shadow-[0_0_30px_-12px_rgba(59,130,246,0.45)]">
-            {node}
-          </span>
-          {i < nodes.length - 1 && (
-            <>
-              <ArrowDown size={16} aria-hidden="true" className="shrink-0 text-accent-soft md:hidden" />
-              <ArrowRight size={16} aria-hidden="true" className="hidden shrink-0 text-accent-soft md:block" />
-            </>
-          )}
-        </li>
-      ))}
-    </ol>
-  )
-}
-
 function NextProject({ project }) {
   return (
     <a
@@ -214,10 +195,13 @@ export default function CaseStudy({ project }) {
         <Chapter n="03" title="Challenges & solutions">
           <ChallengeList challenges={caseStudy.challenges} />
         </Chapter>
-        <Chapter n="04" title="Architecture">
-          <FlowDiagram nodes={caseStudy.architecture} />
+        <Chapter n="04" title="How it works">
+          <ProjectVisual project={project} />
         </Chapter>
-        <Chapter n="05" title="Results & learnings">
+        <Chapter n="05" title="Architecture">
+          <ArchitectureFlow layers={caseStudy.architecture} size="full" title="Simplified layers" />
+        </Chapter>
+        <Chapter n="06" title="Results & learnings">
           <div className="grid gap-10 md:grid-cols-2">
             <div>
               <h2 className="mb-5 font-display text-3xl text-white">Results</h2>

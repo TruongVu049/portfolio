@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
-import { ArrowUpRight, Mail, MapPin } from 'lucide-react'
+import { ArrowUpRight, Download, Mail, MapPin } from 'lucide-react'
+import { FiGithub, FiLinkedin } from 'react-icons/fi'
 import SectionHeading from '../ui/SectionHeading'
 import Reveal from '../ui/Reveal'
 import { PROFILE } from '../../data/profile'
@@ -7,7 +8,33 @@ import ContactForm from './ContactForm'
 
 const LiquidBlob = lazy(() => import('./LiquidBlob'))
 
-export default function Contact() {
+// Empty URLs are dropped, so each link appears once its value is filled in profile.js.
+const QUICK_LINKS = [
+  { label: 'Résumé (PDF)', href: PROFILE.resumeUrl, icon: Download, download: true },
+  { label: 'LinkedIn', href: PROFILE.socials.linkedin, icon: FiLinkedin },
+  { label: 'GitHub', href: PROFILE.socials.github, icon: FiGithub },
+].filter((link) => link.href)
+
+function QuickLinks() {
+  return (
+    <ul className="mb-8 flex flex-wrap gap-2.5">
+      {QUICK_LINKS.map(({ label, href, icon: Icon, download }) => (
+        <li key={label}>
+          <a
+            href={href}
+            {...(download ? { download: true } : { target: '_blank', rel: 'noreferrer' })}
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm text-zinc-200 hover:border-accent/60 hover:bg-accent/10 hover:text-white"
+          >
+            <Icon size={15} className="text-accent-soft" />
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export default function Contact({ index = '06' }) {
   return (
     <section id="Contact" className="relative overflow-hidden bg-black px-5 py-28 sm:px-8 lg:px-12">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -18,7 +45,7 @@ export default function Contact() {
       <div className="relative mx-auto grid max-w-[80rem] items-center gap-16 lg:grid-cols-2">
         <div>
           <SectionHeading
-            index="06"
+            index={index}
             eyebrow="Contact"
             title="Let's work"
             accent="together."
@@ -36,6 +63,9 @@ export default function Contact() {
               {PROFILE.location}
             </span>
           </Reveal>
+          <Reveal delay={0.12}>
+            <QuickLinks />
+          </Reveal>
           <Reveal delay={0.15}>
             <ContactForm />
           </Reveal>
@@ -45,7 +75,7 @@ export default function Contact() {
           <Suspense fallback={<div className="aspect-square w-full max-w-[340px]" />}>
             <LiquidBlob />
           </Suspense>
-          <p className="relative font-mono text-[10px] uppercase tracking-[0.4em] text-accent-soft/40">
+          <p aria-hidden="true" className="relative font-mono text-[11px] uppercase tracking-[0.25em] text-accent-soft/60">
             Move your cursor — it&apos;s alive
           </p>
         </Reveal>

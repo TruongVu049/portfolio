@@ -88,6 +88,23 @@ export function isSettled(bodies) {
   return bodies.every((b) => !b.dragging && Math.abs(b.vx) < REST_SPEED && Math.abs(b.vy) < REST_SPEED * 4 && b.y > 0)
 }
 
+const SETTLE_DT = 1 / 60
+const MAX_SETTLE_STEPS = 1200 // 20 simulated seconds
+
+/**
+ * Run the simulation offline until everything rests, so the pile can be shown
+ * without the falling animation (reduced motion).
+ * @returns {number} steps taken
+ */
+export function settle(bodies, width, height, maxSteps = MAX_SETTLE_STEPS) {
+  let steps = 0
+  while (steps < maxSteps && !isSettled(bodies)) {
+    step(bodies, SETTLE_DT, width, height)
+    steps += 1
+  }
+  return steps
+}
+
 /**
  * Push bodies away from a moving pointer ("poke").
  * @returns {boolean} whether any body was touched (so the loop should wake up)

@@ -54,6 +54,9 @@
   --horizon-rim-glow: rgb(147 197 253 / 0.35);
   --horizon-glow: rgb(59 130 246 / 0.45);
   --horizon-inner: rgb(37 99 235 / 0.16);
+  --star: #ffffff;
+  --star-glow: rgb(147 197 253 / 0.8);
+  --horizon-line: rgb(147 197 253 / 0.1);
 }
 
 /* Light theme re-maps the palette so the dark-first utilities keep working. */
@@ -77,6 +80,10 @@ body.light {
 
   /* Pale blue text is unreadable on a light page: use a deeper blue. */
   --color-accent-soft: #2563eb;
+  /* Status text (diagram outcomes, form feedback) needs darker shades on white. */
+  --color-emerald-300: #047857;
+  --color-amber-300: #b45309;
+  --color-rose-300: #be123c;
 
   --signature-1: #0b1220;
   --signature-2: #1e3a8a;
@@ -97,6 +104,9 @@ body.light {
   --horizon-rim-glow: rgb(59 130 246 / 0.25);
   --horizon-glow: rgb(59 130 246 / 0.22);
   --horizon-inner: rgb(147 197 253 / 0.25);
+  --star: #1e3a8a;
+  --star-glow: rgb(37 99 235 / 0.35);
+  --horizon-line: rgb(37 99 235 / 0.1);
 }
 html:has(body.light) { background: #f4f7fc; }
 
@@ -178,17 +188,228 @@ html.lenis, html.lenis body { height: auto; }
   mix-blend-mode: overlay;
   opacity: var(--grain-opacity);
 }
-/* Curved horizon in the hero: page-coloured body (hides the grid), lit rim, upward glow. */
+/*
+ * Curved horizon in the hero: a planet seen from orbit. The page-coloured body hides
+ * the page grid and carries its own latitude/longitude grid near the limb, faded out
+ * toward the centre, so it reads as a globe rather than a flat band.
+ */
 .hero-horizon {
   background:
     radial-gradient(60% 18% at 50% 0%, var(--horizon-inner), transparent),
+    radial-gradient(closest-side, var(--color-black) 86%, transparent 99%),
+    repeating-radial-gradient(closest-side, transparent 0 2.4%, var(--horizon-line) 2.4% calc(2.4% + 1px)),
+    repeating-conic-gradient(var(--horizon-line) 0 0.08deg, transparent 0.08deg 3.6deg),
     var(--color-black);
+}
+/* Lit rim and upward glow, on their own layer so they can fade out at the screen edges. */
+.hero-horizon-rim {
   box-shadow:
     inset 0 1px 0 var(--horizon-rim),
     inset 0 24px 60px -24px var(--horizon-inner),
     0 -2px 18px var(--horizon-rim-glow),
     0 -24px 90px -12px var(--horizon-glow);
 }
+/* ---------- Hero space scene ---------- */
+/* Every animation here is transform/opacity only, and freezes while the hero is off screen. */
+.space-scene[data-paused] * { animation-play-state: paused; }
+
+.space-star {
+  position: absolute;
+  border-radius: 9999px;
+  background: var(--star);
+  opacity: var(--star-o);
+  animation: space-twinkle ease-in-out infinite;
+}
+.space-star--bright { box-shadow: 0 0 6px 1px var(--star-glow); }
+@keyframes space-twinkle {
+  0%, 100% { opacity: var(--star-o); }
+  50% { opacity: calc(var(--star-o) * 0.2); }
+}
+
+.space-shooting-star {
+  display: block;
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--star), transparent);
+  opacity: 0;
+  animation: space-shooting-star linear infinite both;
+}
+@keyframes space-shooting-star {
+  0% { transform: translateX(0); opacity: 0; }
+  1% { opacity: 1; }
+  /* Short streaks, so each stays in its own corner of the sky and off the name. */
+  7%, 100% { transform: translateX(-28vmax); opacity: 0; }
+}
+
+/* Planet: bobs and wobbles, its ring dust and storms drift, a moon orbits it. */
+.space-planet { position: relative; animation: space-planet-float 8s ease-in-out infinite alternate; }
+@keyframes space-planet-float {
+  from { transform: translate(0, 0) rotate(-2deg); }
+  to { transform: translate(-8px, -18px) rotate(4deg); }
+}
+.space-planet-glow { animation: space-planet-glow 5s ease-in-out infinite alternate; }
+@keyframes space-planet-glow {
+  from { opacity: 0.6; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1.08); }
+}
+/* SVG transforms rotate around the local origin, which the wrapper puts at the planet's centre. */
+.space-moon-orbit { animation: space-orbit 16s linear infinite; }
+.space-moon-orbit--counter { animation-direction: reverse; }
+@keyframes space-orbit {
+  to { transform: rotate(360deg); }
+}
+/* The dash pattern repeats every 10 units, so any multiple of 10 loops seamlessly. */
+.space-ring-dust { animation: space-ring-dust 7s linear infinite; }
+@keyframes space-ring-dust {
+  to { stroke-dashoffset: -100; }
+}
+.space-planet-storm { animation: space-planet-storm 14s linear infinite; }
+.space-planet-storm--slow { animation-duration: 22s; animation-delay: -9s; }
+@keyframes space-planet-storm {
+  from { transform: translateX(-64px); }
+  to { transform: translateX(64px); }
+}
+
+/* Satellite: X and Y drift on different periods plus a slow tumble, panel glint, signal. */
+.space-satellite-x { animation: space-satellite-x 13s ease-in-out infinite alternate; }
+.space-satellite-y { animation: space-satellite-y 8s ease-in-out infinite alternate; }
+.space-satellite-tilt { animation: space-satellite-tilt 10s ease-in-out infinite alternate; }
+@keyframes space-satellite-x {
+  from { transform: translateX(16px); }
+  to { transform: translateX(-56px); }
+}
+@keyframes space-satellite-y {
+  from { transform: translateY(-14px); }
+  to { transform: translateY(18px); }
+}
+@keyframes space-satellite-tilt {
+  from { transform: rotate(-14deg); }
+  to { transform: rotate(12deg); }
+}
+.space-satellite-glint { animation: space-satellite-glint 5s ease-in-out infinite; }
+@keyframes space-satellite-glint {
+  from { transform: translateX(0); }
+  35%, to { transform: translateX(150px); }
+}
+.space-signal {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: space-signal 2.4s ease-out infinite;
+}
+@keyframes space-signal {
+  from { transform: scale(0.3); opacity: 0.9; }
+  to { transform: scale(2.4); opacity: 0; }
+}
+.space-beacon { animation: space-beacon 2s steps(1) infinite; }
+@keyframes space-beacon {
+  50% { opacity: 0.15; }
+}
+
+/*
+ * Rocket flight: climb, drift and tilt share one 18s timeline. The flight takes the
+ * first half; the drift eases in harder than the climb, which bends the path into an
+ * arc. For the rest of the cycle it waits, invisible, back behind the horizon.
+ */
+.space-rocket-climb,
+.space-rocket-drift,
+.space-rocket-tilt {
+  /* Longhands on purpose: the minifier collapses a name-less `animation` shorthand to `none`. */
+  animation-duration: 18s;
+  /* Set from SCENE_DELAY.rocket in introTimeline.js. */
+  animation-delay: var(--rocket-delay, 1s);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+.space-rocket-climb { animation-name: space-rocket-climb; }
+.space-rocket-drift { animation-name: space-rocket-drift; }
+.space-rocket-tilt { animation-name: space-rocket-tilt; transform-origin: 50% 60%; }
+@keyframes space-rocket-climb {
+  0% { transform: translateY(0); opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.75, 0.6); }
+  47% { opacity: 1; }
+  50%, 100% { transform: translateY(-115vh); opacity: 0; }
+}
+@keyframes space-rocket-drift {
+  0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.45); }
+  50%, 100% { transform: translateX(16vw); }
+}
+@keyframes space-rocket-tilt {
+  0% { transform: rotate(-2deg); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  50%, 100% { transform: rotate(30deg); }
+}
+.space-flame {
+  transform-box: fill-box;
+  transform-origin: top;
+  animation: space-flame 0.12s ease-in-out infinite alternate;
+}
+@keyframes space-flame {
+  to { transform: scaleY(0.78); opacity: 0.85; }
+}
+
+/*
+ * Floating astronaut. Limbs swing around their joints, given in the SVG's 200×260
+ * viewBox units (transform-origin resolves against the viewBox for SVG children).
+ */
+.astronaut[data-paused] * { animation-play-state: paused; }
+.astro-float { animation: astro-float 7s ease-in-out infinite alternate; }
+@keyframes astro-float {
+  from { transform: translate(0, 0) rotate(-6deg); }
+  to { transform: translate(6px, -18px) rotate(6deg); }
+}
+.astro-arm--wave { transform-origin: 134px 116px; animation: astro-wave 6s ease-in-out infinite; }
+@keyframes astro-wave {
+  0%, 35%, 100% { transform: rotate(0); }
+  6%, 18% { transform: rotate(-24deg); }
+  12%, 24% { transform: rotate(10deg); }
+  30% { transform: rotate(-8deg); }
+}
+.astronaut:hover .astro-arm--wave { animation: astro-wave-fast 0.45s ease-in-out infinite alternate; }
+@keyframes astro-wave-fast {
+  from { transform: rotate(-26deg); }
+  to { transform: rotate(12deg); }
+}
+.astro-arm--left { transform-origin: 66px 116px; animation: astro-swing 4s ease-in-out infinite alternate; }
+@keyframes astro-swing {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(8deg); }
+}
+.astro-leg { animation: astro-kick 3.2s ease-in-out infinite alternate; }
+.astro-leg--left { transform-origin: 84px 178px; }
+.astro-leg--right { transform-origin: 116px 178px; animation-delay: -1.6s; }
+@keyframes astro-kick {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(10deg); }
+}
+/* Swings from its belt clip (TETHER_ANCHOR in Astronaut.jsx). */
+.astro-tether { transform-origin: 64px 176px; animation: astro-tether 5s ease-in-out infinite alternate; }
+@keyframes astro-tether {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(6deg); }
+}
+.astro-glow { animation: astro-glow 4s ease-in-out infinite alternate; }
+@keyframes astro-glow {
+  from { opacity: 0.7; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1.05); }
+}
+.astro-visor-glint { animation: astro-visor-glint 6s ease-in-out infinite; }
+@keyframes astro-visor-glint {
+  from { transform: translateX(0); }
+  30%, to { transform: translateX(140px); }
+}
+.astro-blink { animation: space-beacon 2.4s steps(1) infinite; }
+.astro-blink--lamp { animation-duration: 1.6s; }
+.astro-puff {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: astro-puff 2.2s ease-out infinite;
+}
+@keyframes astro-puff {
+  from { transform: translateY(0) scale(0.4); opacity: 0.8; }
+  to { transform: translateY(18px) scale(1.7); opacity: 0; }
+}
+body.light .astronaut svg { filter: drop-shadow(0 0 1.5px rgb(15 23 42 / 0.55)); }
+
 .mask-fade-y {
   mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
 }
@@ -258,7 +479,6 @@ body.light .glow-card {
   background: var(--toggle-bg);
   border-color: color-mix(in oklab, var(--color-white) 18%, transparent);
 }
-body.light .lanyard-layer canvas { filter: drop-shadow(0 0 1.5px rgb(15 23 42 / 0.75)); }
 
 ::view-transition-old(root),
 ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }

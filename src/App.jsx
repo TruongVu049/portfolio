@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { jumpTo, useLenis } from './hooks/useLenis'
 import { takeReturnSection, useCaseStudySlug } from './hooks/useCaseStudyRoute'
 import { useTheme } from './context/ThemeContext'
-import { PROFILE } from './data/profile'
+import { PROFILE, PUBLISHED_NOTES } from './data/profile'
 import { findProject } from './data/projects'
 import StaggeredMenu from './components/layout/StaggeredMenu'
 import ThemeToggle from './components/layout/ThemeToggle'
@@ -17,17 +17,20 @@ import Notes from './components/notes/Notes'
 import Contact from './components/contact/Contact'
 import Footer from './components/footer/Footer'
 
-export const NAV_ITEMS = [
+const HAS_NOTES = PUBLISHED_NOTES.length > 0
+
+const NAV_ITEMS = [
   { label: 'Home', target: 'Home' },
   { label: 'Projects', target: 'Projects' },
   { label: 'Skills', target: 'Expertise' },
   { label: 'Career', target: 'Experience' },
   { label: 'About', target: 'About' },
-  { label: 'Notes', target: 'Notes' },
+  HAS_NOTES && { label: 'Notes', target: 'Notes' },
   { label: 'Contact', target: 'Contact' },
-]
+].filter(Boolean)
 
 const SOCIAL_ITEMS = [
+  { label: 'Résumé', href: PROFILE.resumeUrl },
   { label: 'GitHub', href: PROFILE.socials.github },
   { label: 'LinkedIn', href: PROFILE.socials.linkedin },
 ].filter((social) => social.href)
@@ -41,8 +44,8 @@ function HomePage() {
       <CurvedMarquee />
       <Experience />
       <About />
-      <Notes />
-      <Contact />
+      {HAS_NOTES && <Notes />}
+      <Contact index={HAS_NOTES ? '06' : '05'} />
     </main>
   )
 }

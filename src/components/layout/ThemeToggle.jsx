@@ -14,9 +14,8 @@ export default function ThemeToggle() {
   }
 
   return (
-    // z-50 like the menu header: the hero's lanyard canvas (z-40) covers the whole
-    // viewport and would otherwise swallow clicks. The open menu panel, later in
-    // the DOM at the same z-index, still covers the toggle.
+    // z-50 like the menu header, so it stays above the hero's layers. The open menu
+    // panel, later in the DOM at the same z-index, still covers the toggle.
     <button
       ref={buttonRef}
       type="button"

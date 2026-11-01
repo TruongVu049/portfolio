@@ -8,7 +8,8 @@ export const PROFILE = {
   initials: 'TV',
   role: 'Frontend Engineer',
   focus: 'React · Next.js · TypeScript',
-  tagline: { plain: 'I build reliable, scalable and', script: 'user-focused web applications.' },
+  tagline: { plain: 'Commerce, POS and enterprise apps', script: 'that keep working when things fail.' },
+  positioning: 'Frontend engineer with hands-on full-stack experience: offline-first POS, payments and enterprise workflows.',
   location: 'Ho Chi Minh City, Vietnam',
   locationShort: 'HCMC, VN',
   timeZone: 'Asia/Ho_Chi_Minh',
@@ -56,10 +57,11 @@ export const ABOUT = {
       body: 'Deliberately building backend, database, DevOps and system design knowledge on the way to full-stack engineering, and later software architecture.',
     },
   ],
+  // `project` links a topic to the case study where it was applied in production.
   learning: [
-    { icon: 'server', label: 'Node.js', text: 'Event loop, async patterns and how backend services are structured.' },
-    { icon: 'database', label: 'PostgreSQL', text: 'Indexes, transactions, joins and reading query plans.' },
-    { icon: 'network', label: 'System design', text: 'Consistency, caching, queues and the trade-offs between them.' },
+    { icon: 'server', label: 'Node.js', text: 'Event loop, async patterns and how backend services are structured.', project: 'po5-commerce' },
+    { icon: 'database', label: 'PostgreSQL', text: 'Indexes, transactions, joins and reading query plans.', project: 'po5-commerce' },
+    { icon: 'network', label: 'System design', text: 'Consistency, caching, queues and the trade-offs between them.', project: 'po5-commerce' },
     { icon: 'container', label: 'DevOps', text: 'Docker, Linux, Nginx and CI/CD pipelines for shipping safely.' },
   ],
 }
@@ -91,7 +93,7 @@ export const EXPERIENCE = [
     from: 'Late 2025',
     to: 'Present',
     icon: 'server',
-    body: 'About a year of backend: six months of structured self-study, then six months as the main developer of PowerShop, a Medusa v2 commerce platform now in production.',
+    body: 'About a year of backend: structured self-study from late 2025, then main developer of PowerShop since July 2026, a Medusa v2 commerce platform now in production.',
     highlights: [
       'Built payment, shipping and affiliate workflows on Medusa v2 with PostgreSQL, Redis and RabbitMQ.',
       'Designed the outbox and inbox integration with a commission engine owned by another team.',
@@ -127,6 +129,9 @@ export const NOTES = [
     href: '',
   },
 ]
+
+// Only published notes are shown; with none, the section and its menu entry are hidden.
+export const PUBLISHED_NOTES = NOTES.filter((note) => note.href)
 
 export const MARQUEE_WORDS = ['RELIABLE', 'SCALABLE', 'USER-FOCUSED', 'MAINTAINABLE', 'TYPE-SAFE']
 

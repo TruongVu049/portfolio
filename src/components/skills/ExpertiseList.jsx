@@ -10,7 +10,7 @@ function UsedIn({ slugs }) {
   if (projects.length === 0) return null
   return (
     <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-zinc-500">
-      <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-600">Used in</span>
+      <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">Used in</span>
       {projects.map((project) => (
         <a key={project.slug} href={caseStudyHref(project.slug)} className="text-zinc-400 underline-offset-4 hover:text-white hover:underline">
           {project.short}
@@ -31,7 +31,7 @@ export default function ExpertiseList() {
               <span className="font-mono text-[11px] text-accent-soft">{pad(i + 1)}</span>
               <div>
                 <h3 className="font-display text-3xl tracking-tight text-white sm:text-4xl">{group.group}</h3>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500">{group.level}</p>
+                <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">{group.level}</p>
               </div>
             </div>
             <div className="pl-9 md:pl-0">

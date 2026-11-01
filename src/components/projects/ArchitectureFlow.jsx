@@ -1,24 +1,49 @@
 const LINK_DELAY_S = 0.35
 
+const SIZES = {
+  compact: {
+    row: 'grid-cols-[6.5rem_minmax(0,1fr)] gap-3',
+    label: 'text-[11px] tracking-[0.18em]',
+    node: 'px-2.5 py-1.5 text-xs',
+    link: 'ml-[7.25rem] h-3',
+  },
+  full: {
+    row: 'gap-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-6',
+    label: 'text-xs tracking-[0.22em]',
+    node: 'px-4 py-3 text-sm',
+    link: 'ml-4 h-5 sm:ml-[12.5rem]',
+  },
+}
+
 /**
- * A project's architecture as a chain of layers, with a signal pulsing through the
- * links between them. Horizontal from `sm` up, stacked vertically on phones.
+ * A project's architecture as stacked layers (client → backend → data → external),
+ * each holding its own components, with a signal pulsing down the links between them.
+ *
+ * @param {{ layers: { layer: string, nodes: string[] }[], size?: 'compact' | 'full', title?: string }} props
  */
-export default function ArchitectureFlow({ steps }) {
+export default function ArchitectureFlow({ layers, size = 'compact', title = 'Architecture' }) {
+  const s = SIZES[size]
   return (
-    <div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Architecture</p>
-      <ol className="mt-4 flex flex-col sm:flex-row sm:items-stretch">
-        {steps.map((step, i) => (
-          <li key={step} className="flex flex-col items-start sm:flex-1 sm:flex-row sm:items-stretch">
-            <span className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs leading-snug text-zinc-300 sm:flex sm:items-center sm:justify-center sm:text-center">
-              {step}
-            </span>
-            {i < steps.length - 1 && (
-              <span
-                aria-hidden="true"
-                className="relative ml-5 h-4 w-px flex-none overflow-hidden bg-white/10 sm:ml-0 sm:h-px sm:w-4 sm:self-center"
-              >
+    <figure>
+      <figcaption className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">{title}</figcaption>
+      <ol className="mt-4">
+        {layers.map(({ layer, nodes }, i) => (
+          <li key={layer}>
+            <div className={`grid items-center ${s.row}`}>
+              <span className={`font-mono uppercase text-zinc-400 ${s.label}`}>{layer}</span>
+              <ul className="flex flex-wrap gap-1.5">
+                {nodes.map((node) => (
+                  <li
+                    key={node}
+                    className={`rounded-lg border border-white/10 bg-white/[0.03] leading-snug text-zinc-200 ${s.node}`}
+                  >
+                    {node}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {i < layers.length - 1 && (
+              <span aria-hidden="true" className={`relative block w-px overflow-hidden bg-white/15 ${s.link}`}>
                 <span
                   className="absolute inset-0 animate-flow-pulse bg-accent-soft"
                   style={{ animationDelay: `${i * LINK_DELAY_S}s` }}
@@ -28,6 +53,6 @@ export default function ArchitectureFlow({ steps }) {
           </li>
         ))}
       </ol>
-    </div>
+    </figure>
   )
 }

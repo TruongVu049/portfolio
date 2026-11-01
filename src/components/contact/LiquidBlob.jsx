@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { MeshDistortMaterial } from '@react-three/drei'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
@@ -55,6 +56,9 @@ export default function LiquidBlob() {
   const isMobile = useMediaQuery('(max-width: 767px)')
   const wrapperRef = useRef(null)
   const inView = useInViewport(wrapperRef, '100px')
+  const reduceMotion = useReducedMotion()
+  // Reduced motion: draw the blob once and leave it still.
+  const animate = inView && !reduceMotion
 
   return (
     <div ref={wrapperRef} className="relative mx-auto aspect-square w-full max-w-[340px]">
@@ -69,7 +73,7 @@ export default function LiquidBlob() {
         <Canvas
           // 'demand' still draws one frame on mount, so shaders compile at load time
           // instead of causing a hitch when the section scrolls into view.
-          frameloop={inView ? 'always' : 'demand'}
+          frameloop={animate ? 'always' : 'demand'}
           camera={{ position: [0, 0, 4.2], fov: 45 }}
           dpr={[1, isMobile ? 1.5 : 1.75]}
           gl={{ alpha: true, powerPreference: 'high-performance' }}

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { MARQUEE_WORDS } from '../../data/profile'
 import { useInViewport } from '../../hooks/useInViewport'
 
@@ -16,6 +17,8 @@ export default function CurvedMarquee() {
   const [spacing, setSpacing] = useState(0)
   const drag = useRef({ active: false, lastX: 0, velocity: 0, offset: null, applyDelta: null })
   const inView = useInViewport(containerRef, '100px')
+  // With reduced motion the text only moves when dragged.
+  const drift = useReducedMotion() ? 0 : SPEED
 
   const phrase = MARQUEE_WORDS.join(SEPARATOR) + SEPARATOR
   // Only as many copies as the path needs: re-laying out text along a path is costly.
@@ -31,24 +34,36 @@ export default function CurvedMarquee() {
     if (!spacing || !inView) return undefined
     const state = drag.current
     if (state.offset === null) state.offset = -spacing
-    let frameId
+    let frameId = 0
     const loop = () => {
       if (!state.active) {
-        state.offset += state.velocity !== 0 ? state.velocity : -SPEED
+        state.offset += state.velocity !== 0 ? state.velocity : -drift
         state.velocity *= 0.92
         if (Math.abs(state.velocity) < 0.2) state.velocity = 0
       }
       if (state.offset <= -spacing * 2) state.offset += spacing
       if (state.offset > 0) state.offset -= spacing
       textPathRef.current?.setAttribute('startOffset', `${state.offset.toFixed(1)}px`)
+      // Without drift (reduced motion) the text is still once a drag has coasted out: stop until the next drag.
+      if (!drift && !state.active && state.velocity === 0) {
+        frameId = 0
+        return
+      }
       frameId = requestAnimationFrame(loop)
+    }
+    const wake = () => {
+      if (!frameId) frameId = requestAnimationFrame(loop)
     }
     state.applyDelta = (dx) => {
       state.offset += dx
+      wake()
     }
-    frameId = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(frameId)
-  }, [spacing, inView])
+    wake()
+    return () => {
+      cancelAnimationFrame(frameId)
+      state.applyDelta = null
+    }
+  }, [spacing, inView, drift])
 
   const onPointerDown = (e) => {
     drag.current.active = true
