@@ -39,6 +39,15 @@ const CLIP_RADIUS = 0.1
 // The strap ends at the top of the clip ring so it visibly threads through it.
 const STRAP_ATTACH_Y = CARD_OFFSET_Y + CLIP_Y + CLIP_RADIUS
 
+/** One strap segment, spaced half a unit further along from the anchor per index. */
+function Joint({ ref, anchor, index }) {
+  return (
+    <RigidBody ref={ref} {...SEGMENT_PROPS} position={[anchor[0] + 0.5 * (index + 1), anchor[1], anchor[2]]}>
+      <BallCollider args={[0.1]} />
+    </RigidBody>
+  )
+}
+
 /**
  * A strap made of three rope-jointed segments ending in a card.
  * The strap is a Catmull-Rom curve through the bodies rendered as a MeshLine.
@@ -56,7 +65,12 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
     [],
   )
   const [curve] = useState(
-    () => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]),
+    () =>
+      new THREE.CatmullRomCurve3(
+        [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()],
+        false,
+        'chordal',
+      ),
   )
   const front = useMemo(() => createCanvasTexture(drawCardFront, CARD_CANVAS.width, CARD_CANVAS.height), [])
   const back = useMemo(() => createCanvasTexture(drawCardBack, CARD_CANVAS.width, CARD_CANVAS.height), [])
@@ -132,8 +146,6 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
     card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z })
   })
 
-  curve.curveType = 'chordal'
-
   const startDrag = (e) => {
     e.target.setPointerCapture(e.pointerId)
     setDragOffset(new THREE.Vector3().copy(e.point).sub(scratch.vec.copy(card.current.translation())))
@@ -147,11 +159,9 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
     <>
       <group>
         <RigidBody ref={fixed} {...SEGMENT_PROPS} type="fixed" position={[anchor[0], anchor[1] + 0.5, anchor[2]]} />
-        {[j1, j2, j3].map((ref, i) => (
-          <RigidBody key={i} ref={ref} {...SEGMENT_PROPS} position={[anchor[0] + 0.5 * (i + 1), anchor[1], anchor[2]]}>
-            <BallCollider args={[0.1]} />
-          </RigidBody>
-        ))}
+        <Joint ref={j1} anchor={anchor} index={0} />
+        <Joint ref={j2} anchor={anchor} index={1} />
+        <Joint ref={j3} anchor={anchor} index={2} />
         <RigidBody
           ref={card}
           {...SEGMENT_PROPS}

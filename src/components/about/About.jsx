@@ -1,10 +1,12 @@
-import { Container, Database, Network, Server } from 'lucide-react'
+import { ArrowUpRight, Container, Database, Network, Server } from 'lucide-react'
 import Reveal from '../ui/Reveal'
 import GlowCard from '../ui/GlowCard'
 import SectionHeading from '../ui/SectionHeading'
 import PillButton from '../ui/PillButton'
 import ScrollRevealText from '../ui/ScrollRevealText'
 import { ABOUT, PROFILE } from '../../data/profile'
+import { findProject } from '../../data/projects'
+import { caseStudyHref } from '../../hooks/useCaseStudyRoute'
 import ProfileCard from './ProfileCard'
 import Chapters from './Chapters'
 
@@ -14,20 +16,30 @@ function Learning() {
   return (
     <div className="mt-20">
       <Reveal>
-        <p className="mb-6 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-600">Currently strengthening</p>
+        <p className="mb-6 font-mono text-xs uppercase tracking-[0.25em] text-zinc-400">Currently strengthening</p>
       </Reveal>
       <div className="grid gap-4 sm:grid-cols-2">
-        {ABOUT.learning.map(({ icon, label, text }, i) => {
+        {ABOUT.learning.map(({ icon, label, text, project: slug }, i) => {
           const Icon = LEARNING_ICONS[icon]
+          const project = slug && findProject(slug)
           return (
             <Reveal key={label} delay={i * 0.08}>
               <GlowCard className="h-full p-5 transition-transform duration-500 hover:-translate-y-1">
-                <div className="relative z-10">
+                <div className="relative z-10 flex h-full flex-col">
                   <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-accent-soft">
                     <Icon size={16} />
                   </div>
-                  <h4 className="text-sm font-medium text-white">{label}</h4>
-                  <p className="mt-2 text-[13px] leading-6 text-zinc-500">{text}</p>
+                  <h4 className="text-base font-medium text-white">{label}</h4>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">{text}</p>
+                  {project && (
+                    <a
+                      href={caseStudyHref(project.slug)}
+                      className="group mt-auto inline-flex items-center gap-1.5 pt-4 text-sm text-accent-soft hover:text-white"
+                    >
+                      Applied in {project.short}
+                      <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </a>
+                  )}
                 </div>
               </GlowCard>
             </Reveal>

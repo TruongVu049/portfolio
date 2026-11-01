@@ -2,6 +2,9 @@
 //
 // Company projects: describe only the parts you personally built or solved, and
 // never publish source code, customer data or internal documents without permission.
+//
+// `architecture` is a list of layers ({ layer, nodes }) read top to bottom.
+// `visual` picks the explainer diagram drawn for the project (see components/projects/visuals).
 
 export const PROJECTS = [
   {
@@ -15,13 +18,14 @@ export const PROJECTS = [
     description:
       'A direct-to-consumer commerce platform with a multi-level affiliate programme, built on Medusa v2 and connected to payment, shipping and commission systems.',
     links: { live: 'https://powershop.vn/' },
+    visual: 'payment-ingestion',
     caseStudy: {
       overview:
         'PowerShop replaced a legacy Magento store and added an affiliate programme. Shoppers buy online, partners track referrals, ranks and earnings in their own portal, and operations, finance and support staff run everything from one back-office.',
       role: {
         title: 'Main developer · full-stack',
         timeline: 'Jul 2026 – present',
-        team: 'Six developers; I made about 70% of the commits',
+        team: 'Six developers; I owned payments, the commission integration, affiliate and fulfilment',
         responsibilities: [
           'Payments end to end: OnePay through the commission engine, SePay bank transfers, reconciliation, payment expiry, refunds and two-person approval for manual settlement.',
           'The integration with a commission engine owned by another team: a transactional outbox and inbox over RabbitMQ with signed, versioned event contracts.',
@@ -37,7 +41,8 @@ export const PROJECTS = [
             'The outbox dispatcher claims each row with a token under a lock, only the current holder can mark it sent, and failed sends retry with exponential backoff.',
         },
         {
-          problem: 'Payment confirmations arrive at least once, through both RabbitMQ and HTTP callbacks, and occasionally not at all.',
+          problem:
+            'Payment confirmations come through both RabbitMQ and HTTP callbacks, and any of them can arrive twice, late or not at all.',
           solution:
             'Both paths share one ingestion flow with a unique inbox index, so duplicates are harmless, and a reconciliation job re-checks payments still pending after ten minutes, for up to seven days.',
         },
@@ -46,11 +51,18 @@ export const PROJECTS = [
           solution: 'The handler now only records the new status and responds; the follow-up updates run in an asynchronous subscriber.',
         },
       ],
-      architecture: ['Storefront & admin', 'Medusa v2 API', 'PostgreSQL · Redis', 'Outbox / inbox · RabbitMQ', 'Payments · shipping · commissions'],
+      architecture: [
+        { layer: 'Client', nodes: ['Next.js storefront', 'Partner portal', 'Medusa admin'] },
+        { layer: 'Commerce backend', nodes: ['Medusa v2 API', 'Workflows & subscribers', 'Scheduled jobs'] },
+        { layer: 'Data', nodes: ['PostgreSQL', 'Redis'] },
+        { layer: 'Messaging', nodes: ['Transactional outbox', 'Inbox', 'RabbitMQ'] },
+        { layer: 'External', nodes: ['Commission engine · OnePay', 'SePay', 'ViettelPost'] },
+      ],
       results: [
         'Live in production at powershop.vn since October 2026.',
-        '314 of 452 commits, the most of anyone on the backend, storefront and admin.',
-        'More than 500 unit tests passing at the August 2026 internal review.',
+        'Payments, the commission integration, affiliate features and fulfilment shipped as modules I own end to end.',
+        'Duplicate payment confirmations are ignored by the inbox, and payments left pending are re-checked automatically for up to seven days.',
+        '314 of 452 commits across the backend, storefront and admin.',
       ],
       learnings: [
         'In payment flows, assume every message can arrive twice, late or never, and design idempotency and reconciliation first.',
@@ -69,13 +81,14 @@ export const PROJECTS = [
     description:
       'A multi-tenant point-of-sale SaaS for retail shops: back-office, cashier screen and tenant admin, built to keep selling when the connection drops.',
     links: {},
+    visual: 'offline-sync',
     caseStudy: {
       overview:
         'MeU Omni POS is a SaaS for retail shops. Owners manage products, stock, purchasing, staff, cash and reports in the back-office, and cashiers sell from a POS screen. A lost connection must never stop a sale, so the POS works offline and syncs when the network returns.',
       role: {
         title: 'Main frontend developer',
         timeline: 'Apr 2026 – Sep 2026',
-        team: 'About ten contributors with a .NET backend team; I made about 90% of the frontend commits',
+        team: 'About ten contributors with a .NET backend team; I owned the frontend and the offline engine',
         responsibilities: [
           'Set up the project: Next.js App Router, design system and theming, an API client generated from OpenAPI with Orval, and team coding guidelines.',
           'Built every back-office module (products, price books, purchasing, stock-takes, invoices, customers, staff and payroll, cash book, eight reports, settings) and the tenant admin portal.',
@@ -100,10 +113,16 @@ export const PROJECTS = [
           solution: 'A synchronous lock per invoice tab blocks the second submit, and a single price resolver keeps group pricing consistent across components.',
         },
       ],
-      architecture: ['Next.js · admin & POS', 'TanStack Query · Orval client', 'Service Worker · IndexedDB · sync queue', '.NET API · SignalR'],
+      architecture: [
+        { layer: 'Client', nodes: ['Back-office', 'Cashier POS', 'Tenant admin'] },
+        { layer: 'Client data', nodes: ['TanStack Query', 'Orval API client', 'Price resolver'] },
+        { layer: 'Offline engine', nodes: ['Service Worker', 'IndexedDB', 'Sync queue · Web Lock'] },
+        { layer: 'Backend', nodes: ['.NET REST API', 'SignalR hub'] },
+      ],
       results: [
-        '77 pages, 64 of them in the back-office, shipped to staging through GitLab CI and Docker.',
+        'A cashier can keep selling through a dropped connection; the queue replays bills safely when the network returns.',
         'About 160 automated tests (Vitest with fake IndexedDB) covering POS money logic and offline storage.',
+        '77 pages, 64 of them in the back-office, shipped to staging through GitLab CI and Docker.',
         '189 of 210 commits in the frontend repository.',
       ],
       learnings: [
@@ -123,6 +142,7 @@ export const PROJECTS = [
     description:
       'A large bilingual ERP for an HR-services company that manages staff for foreign organisations: clients, payroll, foreign labour, documents and archives.',
     links: {},
+    visual: 'server-form',
     caseStudy: {
       overview:
         'FOSCO uses this internal ERP to manage its client organisations and their staff, payroll and income tax, foreign-labour recruitment, official documents and a paper-records archive. It is a large codebase of about 3,500 source files and 100+ pages, in Vietnamese and English.',
@@ -149,9 +169,14 @@ export const PROJECTS = [
           solution: 'One shared helper refreshes every related cached query (lists, details, dropdown options, activity history) after each workflow action.',
         },
       ],
-      architecture: ['React SPA · Vite', 'TanStack Query · Orval client', 'REST API', 'Socket.IO notifications'],
+      architecture: [
+        { layer: 'Client', nodes: ['React SPA · Vite', 'i18next · VI / EN'] },
+        { layer: 'Client data', nodes: ['TanStack Query', 'Orval API client', 'React Hook Form · Zod'] },
+        { layer: 'Backend', nodes: ['REST API · form definitions', 'Socket.IO notifications'] },
+      ],
       results: [
-        'About 30 pages: 21 for recruitment, 8 for statistics and 2 for accounting.',
+        'About 30 pages built: 21 for the recruitment module I owned, 8 for statistics and 2 for accounting.',
+        'Edit forms send only the fields that changed, and every workflow action refreshes related screens through one shared helper.',
         '126 commits over three months in a codebase with more than 3,300.',
       ],
       learnings: [
@@ -171,6 +196,7 @@ export const PROJECTS = [
     description:
       'An enterprise portal where staff request changes to SAP Business Partner data, such as customers, vendors and employees, and route them through multi-step approvals.',
     links: {},
+    visual: 'approval-routing',
     caseStudy: {
       overview:
         'Staff use the portal to create, extend, revise or disable Business Partner records. Each request follows an approval route chosen from what changed, then reaches SAP. I joined about 15 months in, on a codebase with 4,000+ commits from 20+ developers, to fix bugs and deliver change requests.',
@@ -197,13 +223,20 @@ export const PROJECTS = [
         },
         {
           problem: 'Requests with duplicate tax numbers could be submitted.',
-          solution: 'Added a duplicate check to every create form that ignores the request’s own record.',
+          solution:
+            'Every create form now checks for an existing tax number before submit, ignoring the request’s own record, and the backend enforces the same rule so the check cannot be bypassed.',
         },
       ],
-      architecture: ['Next.js portal', 'Azure AD · MSAL', 'REST API', 'SAP · data warehouse'],
+      architecture: [
+        { layer: 'Client', nodes: ['Next.js portal', 'Request forms · approver screens'] },
+        { layer: 'Identity', nodes: ['Azure AD', 'MSAL · Axios interceptor'] },
+        { layer: 'Backend', nodes: ['REST API', 'Approval routing'] },
+        { layer: 'Enterprise systems', nodes: ['SAP', 'Data warehouse'] },
+      ],
       results: [
-        '50 commits: about 25 change requests and 15 bug fixes.',
+        'About 25 change requests and 15 bug fixes delivered on a live approval system.',
         'More than a year maintaining a production approval system.',
+        '50 commits in a codebase with 4,000+.',
       ],
       learnings: [
         'In an unfamiliar codebase, write the existing rules down before changing them.',

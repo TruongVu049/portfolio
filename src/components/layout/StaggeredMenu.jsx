@@ -154,7 +154,7 @@ export default function StaggeredMenu({ items, socials, buttonColor = '#fff' }) 
 
         <div className="mt-auto pt-10">
           <h3 data-menu-extra className="mb-3 text-sm font-medium text-accent-deep">
-            Socials
+            Links
           </h3>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {socials.map((social) => (

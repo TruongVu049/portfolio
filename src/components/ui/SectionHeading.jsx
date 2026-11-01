@@ -17,7 +17,7 @@ export default function SectionHeading({
     >
       <Reveal>
         <div
-          className={`${compact ? 'mb-3' : 'mb-5'} flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-500 ${isCenter ? 'justify-center' : ''}`}
+          className={`${compact ? 'mb-3' : 'mb-5'} flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400 ${isCenter ? 'justify-center' : ''}`}
         >
           {index && <span className="text-accent-soft">{index}</span>}
           <span className="h-px w-8 bg-zinc-700" />

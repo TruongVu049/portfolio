@@ -33,8 +33,8 @@ function StageCard({ item }) {
   return (
     <GlowCard className="p-7 sm:p-9">
       <div className="flex items-center justify-between gap-4">
-        <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-600">Stage {item.stage}</span>
-        <span className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-accent-soft">
+        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">Stage {item.stage}</span>
+        <span className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.25em] text-accent-soft">
           {item.badge}
         </span>
       </div>
@@ -143,7 +143,7 @@ export default function Experience() {
           </ol>
         </div>
 
-        <div className="mt-20 flex flex-wrap justify-between gap-4 font-mono text-[10px] uppercase tracking-[0.35em] text-zinc-600">
+        <div className="mt-20 flex flex-wrap justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
           <span>Frontend → Full-stack → Software architecture</span>
           <span>{EXPERIENCE.map((item) => item.badge).join(' → ')} → …</span>
         </div>

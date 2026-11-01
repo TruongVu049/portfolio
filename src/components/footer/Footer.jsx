@@ -12,7 +12,7 @@ const FOOTER_SOCIALS = [
 function FooterNav({ items }) {
   return (
     <nav aria-label="Footer navigation" className="text-right">
-      <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.4em] text-zinc-600">Navigation</p>
+      <p className="mb-5 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">Navigation</p>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
           <li key={item.target}>
@@ -22,7 +22,7 @@ function FooterNav({ items }) {
               className="group inline-flex cursor-pointer items-baseline gap-3 text-xl text-zinc-400 hover:text-white sm:text-[22px]"
             >
               <span className="transition-transform duration-300 group-hover:-translate-x-1">{item.label}</span>
-              <span className="w-4 font-mono text-[9px] text-zinc-600">{String(i + 1).padStart(2, '0')}</span>
+              <span className="w-4 font-mono text-[11px] text-zinc-400">{String(i + 1).padStart(2, '0')}</span>
             </button>
           </li>
         ))}
@@ -45,7 +45,7 @@ export default function Footer({ navItems }) {
 
           <div className="relative flex flex-col justify-between gap-12 md:flex-row">
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-400">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" /> {PROFILE.role}
               </span>
               <h2 className="mt-6 font-display text-4xl leading-[1.1] tracking-tight text-white sm:text-[2.6rem]">

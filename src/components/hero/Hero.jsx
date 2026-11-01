@@ -1,19 +1,26 @@
-import { lazy, Suspense, useCallback, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
-import { ArrowDownRight, Download, MapPin } from 'lucide-react'
-import { FiGithub, FiLinkedin } from 'react-icons/fi'
-import { PROFILE, TERMINAL_LINES } from '../../data/profile'
-import { scrollToId } from '../../hooks/useLenis'
-import LiveClock from '../about/LiveClock'
-import SignatureText from './SignatureText'
-import Terminal from './Terminal'
-import ScrollBadge from './ScrollBadge'
-import CursorSpotlight from './CursorSpotlight'
+import { useCallback, useRef, useState } from "react"
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion"
+import { ArrowDownRight, Download, MapPin } from "lucide-react"
+import { FiGithub, FiLinkedin } from "react-icons/fi"
+import { PROFILE, TERMINAL_LINES } from "../../data/profile"
+import { scrollToId } from "../../hooks/useLenis"
+import LiveClock from "../about/LiveClock"
+import SignatureText from "./SignatureText"
+import Terminal from "./Terminal"
+import ScrollBadge from "./ScrollBadge"
+import CursorSpotlight from "./CursorSpotlight"
+import SpaceScene from "./space/SpaceScene"
+import Astronaut from "./space/Astronaut"
+import { SCENE_DELAY, SCENE_EASE as EASE } from "./introTimeline"
 
-// three.js + rapier are heavy; load them only once the intro has finished.
-const Lanyard = lazy(() => import('./lanyard/Lanyard'))
-
-const EASE = [0.22, 1, 0.36, 1]
+// The pitch and the buttons must not wait for the signature animation to finish.
+const PITCH_DELAY_S = 0.5
 const fadeUp = (delay = 0, y = 16) => ({
   initial: { opacity: 0, y },
   animate: { opacity: 1, y: 0 },
@@ -35,6 +42,9 @@ function AuroraBackdrop() {
   )
 }
 
+const HORIZON_DISC =
+  "absolute left-1/2 top-[calc(100%-10rem)] aspect-square w-[150vw] -translate-x-1/2 rounded-full sm:top-[calc(100%-11.5rem)] lg:top-[calc(100%-12.5rem)]"
+
 /**
  * Lit, curved horizon the terminal rises out of. The viewport-sized wrapper carries
  * the motion and clips the oversized circle, so no huge layer is ever animated.
@@ -48,7 +58,11 @@ function Horizon() {
       transition={{ duration: 1.6, ease: EASE }}
       className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[max(50vh,22rem)] overflow-hidden"
     >
-      <div className="hero-horizon absolute left-1/2 top-[calc(100%-10rem)] aspect-square w-[150vw] -translate-x-1/2 rounded-full sm:top-[calc(100%-11.5rem)] lg:top-[calc(100%-12.5rem)]" />
+      <div className={`hero-horizon ${HORIZON_DISC}`} />
+      {/* The lit rim fades out toward the screen edges instead of running off them at full strength. */}
+      <div className="absolute inset-0 mask-[linear-gradient(90deg,transparent,#000_24%,#000_76%,transparent)]">
+        <div className={`hero-horizon-rim ${HORIZON_DISC}`} />
+      </div>
       {/* Dissolve into the page colour so the next section continues without a seam. */}
       <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black via-black/70 to-transparent sm:h-32" />
     </motion.div>
@@ -57,23 +71,32 @@ function Horizon() {
 
 function StatusPill() {
   return (
-    <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2.5 pr-4 font-mono text-[11px] uppercase tracking-[0.22em] text-zinc-300 shadow-[0_0_30px_-8px_rgba(59,130,246,0.5)]">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+    <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2.5 pr-4 font-mono text-xs uppercase tracking-[0.2em] text-zinc-300 shadow-[0_0_30px_-8px_rgba(59,130,246,0.5)]">
+      <span aria-hidden="true" className="relative flex h-2 w-2">
+        {PROFILE.available && (
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+        )}
+        <span
+          className={`relative inline-flex h-2 w-2 rounded-full ${PROFILE.available ? "bg-emerald-400" : "bg-amber-400"}`}
+        />
       </span>
-      {/* The role is the positioning, so it stays visible on phones; availability does not. */}
-      <span className="hidden sm:inline">{PROFILE.available ? 'Available for work' : 'Currently busy'}</span>
-      <span className="hidden text-zinc-600 sm:inline">/</span>
+      {/* Availability is spelled out on wide screens and always for screen readers. */}
+      <span className="sr-only xl:not-sr-only">
+        {PROFILE.available ? "Open to work" : "Currently busy"}
+      </span>
+      <span className="hidden text-zinc-500 xl:inline">/</span>
+      {/* The signature is decorative script, so the name is also set in plain type here. */}
+      <span className="hidden text-zinc-100 sm:inline">{`${PROFILE.firstName} ${PROFILE.lastName}`}</span>
+      <span className="hidden text-zinc-500 sm:inline">/</span>
       <span className="text-accent-soft">{PROFILE.role}</span>
-      <span className="hidden text-zinc-500 lg:inline">· {PROFILE.focus}</span>
+      <span className="hidden text-zinc-400 lg:inline">· {PROFILE.focus}</span>
     </span>
   )
 }
 
 const ICON_LINKS = [
-  { key: 'github', label: 'GitHub', icon: FiGithub },
-  { key: 'linkedin', label: 'LinkedIn', icon: FiLinkedin },
+  { key: "github", label: "GitHub", icon: FiGithub },
+  { key: "linkedin", label: "LinkedIn", icon: FiLinkedin },
 ].filter(({ key }) => PROFILE.socials[key])
 
 function HeroActions() {
@@ -81,11 +104,14 @@ function HeroActions() {
     <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-3">
       <button
         type="button"
-        onClick={() => scrollToId('Projects')}
+        onClick={() => scrollToId("Projects")}
         className="group inline-flex cursor-pointer items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-black shadow-[0_10px_40px_-10px_rgba(147,197,253,0.6)] hover:-translate-y-0.5 hover:bg-zinc-100"
       >
         View my projects
-        <ArrowDownRight size={16} className="transition-transform duration-300 group-hover:rotate-[-45deg]" />
+        <ArrowDownRight
+          size={16}
+          className="transition-transform duration-300 group-hover:rotate-[-45deg]"
+        />
       </button>
       {PROFILE.resumeUrl && (
         <a
@@ -94,7 +120,10 @@ function HeroActions() {
           className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.03] px-6 py-3 text-sm font-medium text-white hover:-translate-y-0.5 hover:border-accent/60 hover:bg-accent/10"
         >
           Download résumé
-          <Download size={16} className="transition-transform duration-300 group-hover:translate-y-0.5" />
+          <Download
+            size={16}
+            className="transition-transform duration-300 group-hover:translate-y-0.5"
+          />
         </a>
       )}
       {ICON_LINKS.map(({ key, label, icon: Icon }) => (
@@ -115,14 +144,23 @@ function HeroActions() {
 
 function CornerMeta() {
   return (
-    <div className="absolute bottom-8 left-10 z-20 hidden flex-col gap-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-500 lg:flex">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.9, delay: SCENE_DELAY.cornerMeta, ease: EASE }}
+      className="absolute bottom-8 left-10 z-20 hidden flex-col gap-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400 lg:flex"
+    >
       <span className="flex items-center gap-2 text-zinc-400">
         <MapPin size={13} className="text-accent-soft" /> {PROFILE.location}
       </span>
       <span>
-        Local time · <LiveClock timeZone={PROFILE.timeZone} className="tabular-nums text-zinc-300" />
+        Local time ·{" "}
+        <LiveClock
+          timeZone={PROFILE.timeZone}
+          className="tabular-nums text-zinc-300"
+        />
       </span>
-    </div>
+    </motion.div>
   )
 }
 
@@ -133,66 +171,82 @@ export default function Hero() {
   // As the hero scrolls away its content sinks and fades, so the next section
   // slides over it instead of meeting it at a hard edge.
   const reduceMotion = useReducedMotion()
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  })
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 160])
   const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
   return (
-    <section id="Home" ref={sectionRef} className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black">
+    <section
+      id="Home"
+      ref={sectionRef}
+      className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black"
+    >
       <AuroraBackdrop />
+      <SpaceScene scrollYProgress={scrollYProgress} revealed={introDone} />
       <CursorSpotlight containerRef={sectionRef} />
 
       <AnimatePresence>
         {introDone && (
+          // Drifts in from the left once the signature is written. On phones and
+          // tablets it floats above the status pill, opposite the planet; on desktop
+          // it moves into the gutter beside the name, as close to it as the width allows.
           <motion.div
-            key="lanyard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="lanyard-layer pointer-events-none absolute inset-0 z-40 hidden lg:block [&_canvas]:pointer-events-auto"
+            key="astronaut"
+            initial={{ opacity: 0, x: -120, rotate: -25 }}
+            animate={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 1.8, delay: SCENE_DELAY.astronaut, ease: EASE }}
+            // Short phones have no room above the pill, so it sits out there.
+            className="pointer-events-none absolute left-[16%] top-[8%] z-20 w-20 max-sm:[@media(max-height:739px)]:hidden sm:left-[12%] sm:top-[9%] sm:w-28 lg:left-[2%] lg:top-[30%] lg:w-32 xl:left-[4%] xl:top-[25%] xl:w-48 2xl:left-[9%] 2xl:w-56"
           >
-            <Suspense fallback={null}>
-              <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} />
-            </Suspense>
+            <Astronaut />
           </motion.div>
         )}
       </AnimatePresence>
 
       <motion.div
-        style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity }}
+        style={
+          reduceMotion ? undefined : { y: contentY, opacity: contentOpacity }
+        }
         className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 pb-28 sm:pb-36"
       >
         <motion.div {...fadeUp(0.2, 10)}>
           <StatusPill />
         </motion.div>
 
-        <h1 className="mt-2 w-full max-w-[20rem] sm:mt-4 sm:max-w-[36rem] lg:max-w-[42rem] xl:max-w-[48rem]">
+        <h1 className="mt-4 w-full max-w-[20rem] sm:mt-8 sm:max-w-[36rem] lg:max-w-[42rem] xl:max-w-[48rem]">
           <SignatureText onDone={handleSignatureDone} />
         </h1>
 
-        {/* Reserve the space up front so nothing jumps when these fade in. */}
-        <div className="flex min-h-[8.5rem] flex-col items-center gap-7 sm:min-h-[9rem]">
-          <AnimatePresence>
-            {introDone && (
-              <motion.p
-                key="tagline"
-                {...fadeUp(0)}
-                className="-mt-2 text-center text-lg text-zinc-300 sm:-mt-6 sm:text-2xl lg:text-3xl"
-              >
-                {PROFILE.tagline.plain}{' '}
-                <span className="font-display italic tracking-tight text-zinc-100">{PROFILE.tagline.script}</span>
-              </motion.p>
-            )}
-            {introDone && (
-              <motion.div key="actions" {...fadeUp(0.25)}>
-                <HeroActions />
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="flex flex-col items-center gap-7">
+          <div className="-mt-2 flex flex-col items-center gap-3 sm:-mt-6">
+            <motion.p
+              {...fadeUp(PITCH_DELAY_S)}
+              className="max-w-4xl text-center text-lg text-zinc-300 sm:text-2xl lg:text-3xl"
+            >
+              {PROFILE.tagline.plain}{" "}
+              <span className="font-display italic tracking-tight text-zinc-100">
+                {PROFILE.tagline.script}
+              </span>
+            </motion.p>
+            <motion.p
+              {...fadeUp(PITCH_DELAY_S + 0.1)}
+              className="max-w-xl text-center text-sm leading-6 text-zinc-400 sm:text-base"
+            >
+              {PROFILE.positioning}
+            </motion.p>
+          </div>
+          <motion.div {...fadeUp(PITCH_DELAY_S + 0.25)}>
+            <HeroActions />
+          </motion.div>
         </div>
       </motion.div>
 
-      <AnimatePresence>{introDone && <Horizon key="horizon" />}</AnimatePresence>
+      <AnimatePresence>
+        {introDone && <Horizon key="horizon" />}
+      </AnimatePresence>
 
       <AnimatePresence>
         {introDone && (
@@ -200,7 +254,7 @@ export default function Hero() {
             key="terminal"
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.4, ease: EASE }}
+            transition={{ duration: 1.4, delay: SCENE_DELAY.terminal, ease: EASE }}
             className="absolute bottom-0 left-1/2 z-30 w-[min(92vw,22rem)] -translate-x-1/2 sm:w-[min(58vw,36rem)] lg:w-[34rem]"
           >
             <Terminal
@@ -213,7 +267,9 @@ export default function Hero() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>{introDone && <CornerMeta key="meta" />}</AnimatePresence>
+      <AnimatePresence>
+        {introDone && <CornerMeta key="meta" />}
+      </AnimatePresence>
 
       <AnimatePresence>
         {introDone && (
@@ -221,12 +277,18 @@ export default function Hero() {
             key="badge"
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
+            transition={{ duration: 0.9, delay: SCENE_DELAY.scrollBadge, ease: EASE }}
             className="absolute bottom-[8.5rem] right-3 z-40 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-10"
           >
-            <div className="sm:hidden"><ScrollBadge size={76} /></div>
-            <div className="hidden sm:block lg:hidden"><ScrollBadge size={108} /></div>
-            <div className="hidden lg:block"><ScrollBadge size={136} /></div>
+            <div className="sm:hidden">
+              <ScrollBadge size={76} />
+            </div>
+            <div className="hidden sm:block lg:hidden">
+              <ScrollBadge size={108} />
+            </div>
+            <div className="hidden lg:block">
+              <ScrollBadge size={136} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

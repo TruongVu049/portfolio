@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react'
 import GlowCard from '../ui/GlowCard'
 import { caseStudyHref } from '../../hooks/useCaseStudyRoute'
-import ArchitectureFlow from './ArchitectureFlow'
+import { ProjectVisual } from './visuals'
 
 const EASE = [0.22, 1, 0.36, 1]
 const pad = (n) => String(n).padStart(2, '0')
@@ -10,7 +10,7 @@ const pad = (n) => String(n).padStart(2, '0')
 /** "Company project" or "Personal project", plus a status such as "In progress". */
 export function ProjectBadge({ project }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-400">
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-400">
       {project.kind === 'personal' ? 'Personal project' : 'Company project'}
       {project.status && (
         <>
@@ -46,7 +46,7 @@ function ProjectFacts({ project }) {
     <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
       {facts.map(({ label, value }) => (
         <div key={label}>
-          <dt className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">{label}</dt>
+          <dt className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">{label}</dt>
           <dd className="mt-2 text-sm leading-6 text-zinc-200">{value}</dd>
         </div>
       ))}
@@ -87,7 +87,7 @@ export default function ProjectDetail({ project, index, total, direction, onPrev
             {pad(index + 1)}
           </span>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-500">
+            <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
               Project {pad(index + 1)} / {pad(total)}
             </p>
@@ -109,7 +109,10 @@ export default function ProjectDetail({ project, index, total, direction, onPrev
           </ul>
           <div className="mt-auto flex flex-col gap-8 pt-10">
             <ProjectFacts project={project} />
-            <ArchitectureFlow steps={project.caseStudy.architecture} />
+            {/* Fills the card on wider screens; phones get the full version in the case study. */}
+            <div className="hidden sm:block">
+              <ProjectVisual project={project} compact />
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -144,7 +147,7 @@ export default function ProjectDetail({ project, index, total, direction, onPrev
           )}
           <a
             href={caseStudyHref(project.slug)}
-            className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:bg-zinc-200"
+            className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-6 py-3 text-sm font-medium text-black hover:bg-zinc-200"
           >
             Read case study
             <ArrowUpRight size={16} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

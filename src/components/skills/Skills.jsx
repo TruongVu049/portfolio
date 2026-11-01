@@ -34,7 +34,7 @@ function CategoryTabs({ active, onChange }) {
               />
             )}
             <span className="relative">
-              {category} <sup className="ml-0.5 text-[9px] opacity-60">{countFor(category)}</sup>
+              {category} <sup className="ml-0.5 text-[11px] opacity-70">{countFor(category)}</sup>
             </span>
           </button>
         )
@@ -46,6 +46,10 @@ function CategoryTabs({ active, onChange }) {
 export default function Skills() {
   const [active, setActive] = useState('All')
   const [inspected, setInspected] = useState(null)
+  const selectCategory = (category) => {
+    setActive(category)
+    setInspected(null)
+  }
   const visible = useMemo(
     () => (active === 'All' ? SKILLS : SKILLS.filter((s) => s.category === active)),
     [active],
@@ -65,13 +69,13 @@ export default function Skills() {
 
         <div className="mt-16 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <Reveal>
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Interactive</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">Playground</p>
             <h3 className="mt-2 font-display text-3xl tracking-tight text-white sm:text-4xl">
-              The toolbox <em className="text-zinc-500">— play with it.</em>
+              The toolbox <em className="text-zinc-400">— drag and flick.</em>
             </h3>
           </Reveal>
           <Reveal>
-            <CategoryTabs active={active} onChange={setActive} />
+            <CategoryTabs active={active} onChange={selectCategory} />
           </Reveal>
         </div>
 
@@ -79,7 +83,7 @@ export default function Skills() {
           <GlowCard
             bare
             // Phones stack the bubbles higher, so the box is taller there to keep the inspector clear.
-            className="h-[560px] overflow-hidden rounded-3xl border border-white/[0.08] bg-zinc-950/60 sm:h-[520px] lg:h-[560px]"
+            className="h-[500px] overflow-hidden rounded-3xl border border-white/[0.08] bg-zinc-950/60 sm:h-[440px] lg:h-[460px]"
           >
             <div aria-hidden="true" className="pointer-events-none absolute inset-0">
               <div className="bg-lines mask-radial absolute inset-0 opacity-60" />
@@ -89,7 +93,8 @@ export default function Skills() {
             </div>
             {/* Painted before the pit so flung bubbles pass over the read-out. */}
             <SkillInspector skill={inspected} total={visible.length} />
-            <BubblePit skills={visible} onActiveChange={setInspected} />
+            {/* Keyed by category: each filter gets a fresh pit with no stale selection. */}
+            <BubblePit key={active} skills={visible} onActiveChange={setInspected} />
           </GlowCard>
         </Reveal>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { useInViewport } from '../../hooks/useInViewport'
-import { createBody, isSettled, poke, step } from './bubblePhysics'
+import { createBody, isSettled, poke, settle, step } from './bubblePhysics'
 import { MONO } from './skills.data'
 
 const BASE_RADIUS = 56
@@ -16,7 +17,8 @@ function Bubble({ skill, radius, nodeRef, active, dimmed }) {
       ref={nodeRef}
       data-active={active || undefined}
       data-dimmed={dimmed || undefined}
-      className="skill-bubble absolute left-0 top-0 flex cursor-grab select-none flex-col items-center justify-center gap-1.5 rounded-full border border-(--bubble-border) shadow-(--bubble-shadow) will-change-transform active:cursor-grabbing"
+      // touch-none on the bubble itself: a touch that starts on a bubble drags it, one on empty space scrolls.
+      className="skill-bubble absolute left-0 top-0 flex cursor-grab touch-none select-none flex-col items-center justify-center gap-1.5 rounded-full border border-(--bubble-border) shadow-(--bubble-shadow) will-change-transform active:cursor-grabbing"
       style={{
         '--skill': skill.color === MONO ? 'var(--color-white)' : skill.color,
         width: radius * 2,
@@ -49,6 +51,7 @@ export default function BubblePit({ skills, onActiveChange }) {
   const wakeRef = useRef(() => {})
   const pointerRef = useRef({ x: 0, y: 0, vx: 0, vy: 0, t: 0, dragIndex: -1, offsetX: 0, offsetY: 0 })
   const inView = useInViewport(boxRef, '100px')
+  const reduceMotion = useReducedMotion()
   // Bubble scale per breakpoint; shared by the DOM size and the physics radius.
   const [scale, setScale] = useState(1)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -77,18 +80,17 @@ export default function BubblePit({ skills, onActiveChange }) {
 
   // (Re)spawn bodies whenever the visible skill set or the scale changes.
   useEffect(() => {
-    const width = boxRef.current.clientWidth
+    const { clientWidth: width, clientHeight: height } = boxRef.current
     bodiesRef.current = skills.map((skill, i) => {
       const r = BASE_RADIUS * skill.size * scale
       const x = r + Math.random() * Math.max(1, width - 2 * r)
       return createBody(x, -r - i * r * 0.9, r)
     })
-    // Indices refer to the previous skill set; clear the selection.
-    activeRef.current = -1
-    setActiveIndex(-1)
-    onActiveChange?.(null)
+    // No falling animation: compute the resting pile up front and draw it once.
+    if (reduceMotion && height > 0) settle(bodiesRef.current, width, height)
     wakeRef.current()
-  }, [skills, scale]) // onActiveChange is a stable state setter from the parent
+    // A new skill set remounts the pit (the parent keys it), so the selection needs no reset here.
+  }, [skills, scale, reduceMotion])
 
   useEffect(() => {
     if (!inView) return undefined
@@ -201,7 +203,10 @@ export default function BubblePit({ skills, onActiveChange }) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerLeave}
-      className="relative h-full w-full touch-none overflow-hidden [contain:strict]"
+      // pan-y: a vertical swipe on empty space still scrolls the page instead of being trapped here.
+      className="relative h-full w-full touch-pan-y overflow-hidden [contain:strict]"
+      role="img"
+      aria-label={`Interactive bubbles for ${skills.length} skills. The same skills are listed in the expertise groups above.`}
     >
       {skills.map((skill, i) => (
         <Bubble

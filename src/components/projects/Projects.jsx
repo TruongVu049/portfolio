@@ -37,7 +37,7 @@ function ProjectList({ activeIndex, onSelect }) {
                   />
                 </>
               )}
-              <span className={`relative w-6 font-mono text-[11px] ${active ? 'text-accent-soft' : 'text-zinc-600'}`}>{pad(i + 1)}</span>
+              <span className={`relative w-6 font-mono text-[11px] ${active ? 'text-accent-soft' : 'text-zinc-500'}`}>{pad(i + 1)}</span>
               <span className="relative flex min-w-0 flex-col gap-1">
                 <span
                   className={`font-display text-3xl tracking-tight transition-all duration-500 ${active ? 'translate-x-1 text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}
@@ -45,7 +45,7 @@ function ProjectList({ activeIndex, onSelect }) {
                   {project.short}
                 </span>
                 <span
-                  className={`truncate font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-500 ${active ? 'translate-x-1 text-zinc-400' : 'text-zinc-600'}`}
+                  className={`truncate font-mono text-[11px] uppercase tracking-[0.2em] transition-all duration-500 ${active ? 'translate-x-1 text-zinc-400' : 'text-zinc-500'}`}
                 >
                   {project.category}
                 </span>
@@ -82,7 +82,7 @@ function emphasiseNumbers(text) {
 function ProjectOutcomes({ project }) {
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Outcomes</p>
+      <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">Outcomes</p>
       <AnimatePresence mode="wait">
         <motion.ul
           key={project.slug}
@@ -167,7 +167,7 @@ export default function Projects() {
           </Reveal>
         </div>
 
-        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+        <p className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
           Click a project · use ← → · or swipe
         </p>
       </div>

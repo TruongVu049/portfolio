@@ -33,7 +33,7 @@ export default function Chapters({ chapters, label = 'Chapter' }) {
               transition={{ duration: 0.6 }}
               className="absolute -left-8 top-2 h-[11px] w-[11px] rounded-full shadow-[0_0_14px_2px_rgba(59,130,246,0.6)] sm:-left-10"
             />
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-600">{label} {chapter.n}</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">{label} {chapter.n}</p>
             <h3 className="mt-2 font-display text-3xl text-white sm:text-4xl">{chapter.title}</h3>
             <p className="mt-3 max-w-lg text-sm leading-7 text-zinc-500 sm:text-base">{chapter.body}</p>
           </motion.li>
