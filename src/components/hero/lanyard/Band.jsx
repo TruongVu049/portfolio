@@ -17,6 +17,7 @@ import {
   drawCardBack,
   drawCardFront,
   drawStrap,
+  STRAP_CANVAS,
 } from './textures'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
@@ -32,6 +33,11 @@ const PREFERRED_ANCHOR_X = -6
 const ANCHOR_Y = 4
 const EDGE_MARGIN = 2.2 // world units kept between the card and the left edge
 const CARD_SIZE = [1.6, 2.25, 0.03]
+const CARD_OFFSET_Y = -0.05 // visual card group relative to its rigid body
+const CLIP_Y = CARD_SIZE[1] / 2 + 0.12 // clip ring centre, in the card group
+const CLIP_RADIUS = 0.1
+// The strap ends at the top of the clip ring so it visibly threads through it.
+const STRAP_ATTACH_Y = CARD_OFFSET_Y + CLIP_Y + CLIP_RADIUS
 
 /**
  * A strap made of three rope-jointed segments ending in a card.
@@ -54,7 +60,10 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
   )
   const front = useMemo(() => createCanvasTexture(drawCardFront, CARD_CANVAS.width, CARD_CANVAS.height), [])
   const back = useMemo(() => createCanvasTexture(drawCardBack, CARD_CANVAS.width, CARD_CANVAS.height), [])
-  const strap = useMemo(() => createCanvasTexture(drawStrap, 640, 128, { repeat: true }), [])
+  const strap = useMemo(
+    () => createCanvasTexture(drawStrap, STRAP_CANVAS.width, STRAP_CANVAS.height, { repeat: true }),
+    [],
+  )
   const [dragOffset, setDragOffset] = useState(null)
   const [hovered, setHovered] = useState(false)
   // Hang the card near the left edge, but never so far that narrow screens clip it.
@@ -64,7 +73,7 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
   useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1])
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1])
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1])
-  useSphericalJoint(j3, card, [[0, 0, 0], [0, 1.45, 0]])
+  useSphericalJoint(j3, card, [[0, 0, 0], [0, STRAP_ATTACH_Y, 0]])
 
   useEffect(() => {
     if (!hovered) return undefined
@@ -151,7 +160,7 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
         >
           <CuboidCollider args={[CARD_SIZE[0] / 2, CARD_SIZE[1] / 2, 0.01]} />
           <group
-            position={[0, -0.05, 0]}
+            position={[0, CARD_OFFSET_Y, 0]}
             onPointerOver={() => setHovered(true)}
             onPointerOut={() => setHovered(false)}
             onPointerDown={startDrag}
@@ -180,8 +189,8 @@ export default function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) 
               </mesh>
             ))}
             {/* Metal clip that holds the strap */}
-            <mesh position={[0, CARD_SIZE[1] / 2 + 0.12, 0]}>
-              <torusGeometry args={[0.1, 0.025, 12, 32]} />
+            <mesh position={[0, CLIP_Y, 0]}>
+              <torusGeometry args={[CLIP_RADIUS, 0.025, 12, 32]} />
               <meshStandardMaterial color="#c7d2fe" metalness={0.95} roughness={0.25} />
             </mesh>
           </group>

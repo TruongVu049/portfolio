@@ -1,7 +1,10 @@
 import * as THREE from 'three'
 import { PROFILE } from '../../../data/profile'
 
+/** Logical drawing size; the backing canvas is TEXTURE_SCALE times larger for crisp text. */
 export const CARD_CANVAS = { width: 512, height: 720 }
+export const STRAP_CANVAS = { width: 640, height: 128 }
+const TEXTURE_SCALE = 2
 const RADIUS = 34
 const ACCENT = '#3b82f6'
 const ACCENT_SOFT = '#93c5fd'
@@ -70,6 +73,13 @@ function paintCardBase(ctx, { width, height }) {
   ctx.fill()
 }
 
+/** Largest font size (<= maxSize) at which every line fits within maxWidth. */
+function fitFontSize(ctx, lines, maxWidth, maxSize, fontFor) {
+  ctx.font = fontFor(maxSize)
+  const widest = Math.max(...lines.map((line) => ctx.measureText(line).width))
+  return widest <= maxWidth ? maxSize : Math.floor((maxSize * maxWidth) / widest)
+}
+
 function paintBarcode(ctx, x, y, w, h, seed) {
   let value = seed
   let cursor = x
@@ -114,13 +124,16 @@ export function drawCardFront(ctx) {
   ctx.textBaseline = 'middle'
   ctx.fillText(PROFILE.available ? 'AVAILABLE' : 'BUSY', pad + 40, 191)
 
-  // name
+  // name: both lines share one size, shrunk so the longer line keeps the right padding
+  const nameFont = (size) => `400 ${size}px ${SERIF}`
+  const nameSize = fitFontSize(ctx, [PROFILE.firstName, PROFILE.lastName], width - pad * 2, 104, nameFont)
+  const lastNameBaseline = 460
   ctx.textBaseline = 'alphabetic'
+  ctx.font = nameFont(nameSize)
   ctx.fillStyle = '#ffffff'
-  ctx.font = `400 104px ${SERIF}`
-  ctx.fillText(PROFILE.firstName, pad, 360)
+  ctx.fillText(PROFILE.firstName, pad, lastNameBaseline - Math.round(nameSize * 0.96))
   ctx.fillStyle = 'rgba(255,255,255,0.45)'
-  ctx.fillText(PROFILE.lastName, pad, 460)
+  ctx.fillText(PROFILE.lastName, pad, lastNameBaseline)
 
   // role
   ctx.fillStyle = ACCENT
@@ -180,24 +193,30 @@ export function drawStrap(ctx, width, height) {
 
 /**
  * Canvas-backed texture that can be redrawn later (e.g. once web fonts load).
+ * `draw` works in logical width/height; the backing store is upscaled by TEXTURE_SCALE.
  * @param {(ctx: CanvasRenderingContext2D, w: number, h: number) => void} draw
  */
 export function createCanvasTexture(draw, width, height, { repeat = false } = {}) {
   const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  canvas.width = width * TEXTURE_SCALE
+  canvas.height = height * TEXTURE_SCALE
   const ctx = canvas.getContext('2d')
-  draw(ctx, width, height)
+  const paint = () => {
+    ctx.setTransform(TEXTURE_SCALE, 0, 0, TEXTURE_SCALE, 0, 0)
+    draw(ctx, width, height)
+  }
+  paint()
 
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
-  texture.anisotropy = 8
+  // three.js clamps this to the GPU's maximum.
+  texture.anisotropy = 16
   if (repeat) {
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
   }
   const redraw = () => {
-    draw(ctx, width, height)
+    paint()
     texture.needsUpdate = true
   }
   return { texture, redraw }

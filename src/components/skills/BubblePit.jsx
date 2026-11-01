@@ -9,13 +9,16 @@ const FLICK_SCALE = 1
 
 const scaleFor = (width) => (width < 640 ? 0.62 : width < 1024 ? 0.8 : 1)
 
-function Bubble({ skill, radius, nodeRef }) {
+function Bubble({ skill, radius, nodeRef, active, dimmed }) {
   const Icon = skill.icon
   return (
     <div
       ref={nodeRef}
-      className="absolute left-0 top-0 flex cursor-grab select-none flex-col items-center justify-center gap-1.5 rounded-full border border-(--bubble-border) shadow-(--bubble-shadow) will-change-transform active:cursor-grabbing"
+      data-active={active || undefined}
+      data-dimmed={dimmed || undefined}
+      className="skill-bubble absolute left-0 top-0 flex cursor-grab select-none flex-col items-center justify-center gap-1.5 rounded-full border border-(--bubble-border) shadow-(--bubble-shadow) will-change-transform active:cursor-grabbing"
       style={{
+        '--skill': skill.color === MONO ? 'var(--color-white)' : skill.color,
         width: radius * 2,
         height: radius * 2,
         // Start hidden above the box until the first physics frame positions it.
@@ -32,12 +35,13 @@ function Bubble({ skill, radius, nodeRef }) {
 
 /**
  * Bubbles fall into the box and pile up. Drag to grab, release to flick,
- * or sweep the pointer through them to poke.
+ * or sweep the pointer through them to poke. The hovered or grabbed bubble is
+ * highlighted and reported through `onActiveChange`.
  *
  * Performance: the loop only runs while the box is on screen and something is
  * moving; the box size is cached via ResizeObserver (no per-frame layout reads).
  */
-export default function BubblePit({ skills }) {
+export default function BubblePit({ skills, onActiveChange }) {
   const boxRef = useRef(null)
   const nodesRef = useRef([])
   const bodiesRef = useRef([])
@@ -47,6 +51,17 @@ export default function BubblePit({ skills }) {
   const inView = useInViewport(boxRef, '100px')
   // Bubble scale per breakpoint; shared by the DOM size and the physics radius.
   const [scale, setScale] = useState(1)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const activeRef = useRef(-1)
+
+  // Pointer moves fire constantly; only re-render when the active bubble changes.
+  const setActive = (index) => {
+    if (activeRef.current === index) return
+    activeRef.current = index
+    setActiveIndex(index)
+    onActiveChange?.(index >= 0 ? skills[index] : null)
+  }
+  const hitTest = (x, y) => bodiesRef.current.findIndex((b) => Math.hypot(b.x - x, b.y - y) <= b.r)
 
   useEffect(() => {
     const box = boxRef.current
@@ -68,8 +83,12 @@ export default function BubblePit({ skills }) {
       const x = r + Math.random() * Math.max(1, width - 2 * r)
       return createBody(x, -r - i * r * 0.9, r)
     })
+    // Indices refer to the previous skill set; clear the selection.
+    activeRef.current = -1
+    setActiveIndex(-1)
+    onActiveChange?.(null)
     wakeRef.current()
-  }, [skills, scale])
+  }, [skills, scale]) // onActiveChange is a stable state setter from the parent
 
   useEffect(() => {
     if (!inView) return undefined
@@ -125,7 +144,9 @@ export default function BubblePit({ skills }) {
 
   const handlePointerDown = (e) => {
     const { x, y } = localPoint(e)
-    const index = bodiesRef.current.findIndex((b) => Math.hypot(b.x - x, b.y - y) <= b.r)
+    const index = hitTest(x, y)
+    // Touch has no hover: a tap selects, a tap on empty space clears.
+    setActive(index)
     if (index < 0) return
     const body = bodiesRef.current[index]
     body.dragging = true
@@ -149,9 +170,14 @@ export default function BubblePit({ skills }) {
         body.x = x - pointer.offsetX
         body.y = y - pointer.offsetY
       }
-    } else if (poke(bodiesRef.current, x, y, vx, vy)) {
-      wakeRef.current()
+    } else {
+      if (e.pointerType === 'mouse') setActive(hitTest(x, y))
+      if (poke(bodiesRef.current, x, y, vx, vy)) wakeRef.current()
     }
+  }
+
+  const handlePointerLeave = (e) => {
+    if (e.pointerType === 'mouse' && pointerRef.current.dragIndex < 0) setActive(-1)
   }
 
   const handlePointerUp = (e) => {
@@ -174,6 +200,7 @@ export default function BubblePit({ skills }) {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
       className="relative h-full w-full touch-none overflow-hidden [contain:strict]"
     >
       {skills.map((skill, i) => (
@@ -182,6 +209,8 @@ export default function BubblePit({ skills }) {
           skill={skill}
           radius={BASE_RADIUS * skill.size * scale}
           nodeRef={(el) => (nodesRef.current[i] = el)}
+          active={i === activeIndex}
+          dimmed={activeIndex >= 0 && i !== activeIndex}
         />
       ))}
     </div>

@@ -14,12 +14,15 @@ export default function ThemeToggle() {
   }
 
   return (
+    // z-50 like the menu header: the hero's lanyard canvas (z-40) covers the whole
+    // viewport and would otherwise swallow clicks. The open menu panel, later in
+    // the DOM at the same z-index, still covers the toggle.
     <button
       ref={buttonRef}
       type="button"
       onClick={handleClick}
       aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
-      className="theme-toggle fixed right-[7.5rem] top-4 z-40 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border backdrop-blur-md hover:scale-105 active:scale-95 sm:right-[8rem] sm:top-5"
+      className="theme-toggle fixed right-[7.5rem] top-4 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border backdrop-blur-md hover:scale-105 active:scale-95 sm:right-[8rem] sm:top-5"
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span

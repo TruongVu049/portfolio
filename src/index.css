@@ -13,11 +13,17 @@
 
   --animate-aurora: aurora 14s ease-in-out infinite alternate;
   --animate-spin-slow: spin 22s linear infinite;
+  --animate-flow-pulse: flow-pulse 2.4s ease-in-out infinite;
 
   @keyframes aurora {
     0% { transform: translate(0) scale(1); }
     50% { transform: translate(6%, -4%) scale(1.15); }
     100% { transform: translate(-5%, 5%) scale(1.05); }
+  }
+  /* One link of a flow diagram lighting up; links are staggered with animation-delay. */
+  @keyframes flow-pulse {
+    0%, 35%, 100% { opacity: 0; }
+    15% { opacity: 1; }
   }
 }
 
@@ -42,6 +48,12 @@
   --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(148 170 200 / 0.55) 0%, rgb(51 65 85 / 0.55) 32%,
       rgb(8 11 20 / 0.95) 68%, #04060b 100%);
   --orb-border: rgb(255 255 255 / 0.15);
+  --signature-glow: rgb(59 130 246 / 0.55);
+  --grain-opacity: 0.5;
+  --horizon-rim: rgb(191 219 254 / 0.75);
+  --horizon-rim-glow: rgb(147 197 253 / 0.35);
+  --horizon-glow: rgb(59 130 246 / 0.45);
+  --horizon-inner: rgb(37 99 235 / 0.16);
 }
 
 /* Light theme re-maps the palette so the dark-first utilities keep working. */
@@ -79,6 +91,12 @@ body.light {
   --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(147 197 253 / 0.55) 0%, rgb(219 234 254 / 0.7) 38%,
       rgb(255 255 255 / 0.92) 75%, #ffffff 100%);
   --orb-border: rgb(37 99 235 / 0.2);
+  --signature-glow: rgb(96 165 250 / 0.45);
+  --grain-opacity: 0.35;
+  --horizon-rim: rgb(37 99 235 / 0.55);
+  --horizon-rim-glow: rgb(59 130 246 / 0.25);
+  --horizon-glow: rgb(59 130 246 / 0.22);
+  --horizon-inner: rgb(147 197 253 / 0.25);
 }
 html:has(body.light) { background: #f4f7fc; }
 
@@ -153,6 +171,24 @@ html.lenis, html.lenis body { height: auto; }
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 100% 100%, 64px 64px, 64px 64px;
 }
+/* Film grain: overlay-blended so it only shows where there is light underneath. */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+  opacity: var(--grain-opacity);
+}
+/* Curved horizon in the hero: page-coloured body (hides the grid), lit rim, upward glow. */
+.hero-horizon {
+  background:
+    radial-gradient(60% 18% at 50% 0%, var(--horizon-inner), transparent),
+    var(--color-black);
+  box-shadow:
+    inset 0 1px 0 var(--horizon-rim),
+    inset 0 24px 60px -24px var(--horizon-inner),
+    0 -2px 18px var(--horizon-rim-glow),
+    0 -24px 90px -12px var(--horizon-glow);
+}
 .mask-fade-y {
   mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
 }
@@ -202,6 +238,18 @@ html.lenis, html.lenis body { height: auto; }
 
 body.light .glow-card {
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 12px 32px -14px rgb(15 23 42 / 0.16);
+}
+
+/* ---------- Skill bubbles: spotlight the hovered/grabbed one in its brand colour ---------- */
+/* transform is left out on purpose: the physics loop drives it every frame. */
+.skill-bubble { transition: opacity 0.3s, box-shadow 0.3s, border-color 0.3s; }
+.skill-bubble[data-dimmed] { opacity: 0.4; }
+.skill-bubble[data-active] {
+  border-color: color-mix(in oklab, var(--skill) 65%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--skill) 35%, transparent),
+    0 0 48px -6px color-mix(in oklab, var(--skill) 70%, transparent),
+    var(--bubble-shadow);
 }
 
 /* ---------- Theme helpers ---------- */
