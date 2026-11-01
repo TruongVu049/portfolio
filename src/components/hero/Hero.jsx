@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDownRight, Download, MapPin } from 'lucide-react'
 import { FiGithub, FiLinkedin } from 'react-icons/fi'
 import { PROFILE, TERMINAL_LINES } from '../../data/profile'
@@ -30,7 +30,28 @@ function AuroraBackdrop() {
       <div className="absolute left-1/2 top-1/2 h-[46vmax] w-[70vmax] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgba(59,130,246,0.12),transparent)]" />
       <div className="bg-lines mask-radial absolute inset-0 opacity-80" />
       <div className="absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-black to-transparent" />
+      <div className="bg-grain absolute inset-0" />
     </div>
+  )
+}
+
+/**
+ * Lit, curved horizon the terminal rises out of. The viewport-sized wrapper carries
+ * the motion and clips the oversized circle, so no huge layer is ever animated.
+ */
+function Horizon() {
+  return (
+    <motion.div
+      aria-hidden="true"
+      initial={{ opacity: 0, y: 120 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1.6, ease: EASE }}
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[max(50vh,22rem)] overflow-hidden"
+    >
+      <div className="hero-horizon absolute left-1/2 top-[calc(100%-10rem)] aspect-square w-[150vw] -translate-x-1/2 rounded-full sm:top-[calc(100%-11.5rem)] lg:top-[calc(100%-12.5rem)]" />
+      {/* Dissolve into the page colour so the next section continues without a seam. */}
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black via-black/70 to-transparent sm:h-32" />
+    </motion.div>
   )
 }
 
@@ -109,6 +130,12 @@ export default function Hero() {
   const sectionRef = useRef(null)
   const [introDone, setIntroDone] = useState(false)
   const handleSignatureDone = useCallback(() => setIntroDone(true), [])
+  // As the hero scrolls away its content sinks and fades, so the next section
+  // slides over it instead of meeting it at a hard edge.
+  const reduceMotion = useReducedMotion()
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 160])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
   return (
     <section id="Home" ref={sectionRef} className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black">
@@ -131,7 +158,10 @@ export default function Hero() {
         )}
       </AnimatePresence>
 
-      <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 pb-28 sm:pb-36">
+      <motion.div
+        style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity }}
+        className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 pb-28 sm:pb-36"
+      >
         <motion.div {...fadeUp(0.2, 10)}>
           <StatusPill />
         </motion.div>
@@ -147,7 +177,7 @@ export default function Hero() {
               <motion.p
                 key="tagline"
                 {...fadeUp(0)}
-                className="-mt-2 text-center text-lg text-zinc-400 sm:-mt-6 sm:text-2xl lg:text-3xl"
+                className="-mt-2 text-center text-lg text-zinc-300 sm:-mt-6 sm:text-2xl lg:text-3xl"
               >
                 {PROFILE.tagline.plain}{' '}
                 <span className="font-display italic tracking-tight text-zinc-100">{PROFILE.tagline.script}</span>
@@ -160,7 +190,9 @@ export default function Hero() {
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
+
+      <AnimatePresence>{introDone && <Horizon key="horizon" />}</AnimatePresence>
 
       <AnimatePresence>
         {introDone && (
@@ -171,7 +203,12 @@ export default function Hero() {
             transition={{ duration: 1.4, ease: EASE }}
             className="absolute bottom-0 left-1/2 z-30 w-[min(92vw,22rem)] -translate-x-1/2 sm:w-[min(58vw,36rem)] lg:w-[34rem]"
           >
-            <Terminal lines={TERMINAL_LINES} className="h-32 sm:h-36" />
+            <Terminal
+              lines={TERMINAL_LINES}
+              className="h-32 shadow-[0_-12px_50px_-16px_rgba(59,130,246,0.55)] sm:h-36"
+            />
+            {/* Fades the window's side borders out at the section edge. */}
+            <div className="pointer-events-none absolute -inset-x-1 bottom-0 h-14 bg-linear-to-t from-black to-transparent" />
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import SectionHeading from '../ui/SectionHeading'
 import Reveal from '../ui/Reveal'
+import GlowCard from '../ui/GlowCard'
 import BubblePit from './BubblePit'
+import SkillInspector from './SkillInspector'
 import ExpertiseList from './ExpertiseList'
 import { SKILL_CATEGORIES, SKILLS } from './skills.data'
 
@@ -43,6 +45,7 @@ function CategoryTabs({ active, onChange }) {
 
 export default function Skills() {
   const [active, setActive] = useState('All')
+  const [inspected, setInspected] = useState(null)
   const visible = useMemo(
     () => (active === 'All' ? SKILLS : SKILLS.filter((s) => s.category === active)),
     [active],
@@ -62,24 +65,32 @@ export default function Skills() {
 
         <div className="mt-16 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <Reveal>
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-600">The toolbox · play with it</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Interactive</p>
+            <h3 className="mt-2 font-display text-3xl tracking-tight text-white sm:text-4xl">
+              The toolbox <em className="text-zinc-500">— play with it.</em>
+            </h3>
           </Reveal>
           <Reveal>
             <CategoryTabs active={active} onChange={setActive} />
           </Reveal>
         </div>
 
-        <Reveal delay={0.1} className="mt-4">
-          <div className="relative h-[460px] overflow-hidden rounded-3xl border border-white/[0.08] bg-zinc-950/60 sm:h-[520px] lg:h-[560px]">
+        <Reveal delay={0.1} className="mt-6">
+          <GlowCard
+            bare
+            // Phones stack the bubbles higher, so the box is taller there to keep the inspector clear.
+            className="h-[560px] overflow-hidden rounded-3xl border border-white/[0.08] bg-zinc-950/60 sm:h-[520px] lg:h-[560px]"
+          >
             <div aria-hidden="true" className="pointer-events-none absolute inset-0">
               <div className="bg-lines mask-radial absolute inset-0 opacity-60" />
               <div className="absolute bottom-[-35%] left-1/2 h-full w-full -translate-x-1/2 bg-[radial-gradient(closest-side,rgba(29,78,216,0.16),transparent)]" />
+              {/* Lit floor the bubbles land on */}
+              <div className="absolute inset-x-[8%] bottom-0 h-px bg-linear-to-r from-transparent via-accent-soft/60 to-transparent" />
             </div>
-            <BubblePit skills={visible} />
-            <p className="pointer-events-none absolute inset-x-0 bottom-4 text-center font-mono text-[10px] uppercase tracking-[0.35em] text-zinc-600">
-              Poke · drag · flick
-            </p>
-          </div>
+            {/* Painted before the pit so flung bubbles pass over the read-out. */}
+            <SkillInspector skill={inspected} total={visible.length} />
+            <BubblePit skills={visible} onActiveChange={setInspected} />
+          </GlowCard>
         </Reveal>
       </div>
     </section>
