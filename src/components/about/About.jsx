@@ -57,7 +57,7 @@ function ConnectBanner() {
         <h3 className="font-display text-3xl text-white">
           Let&apos;s build something <em className="text-zinc-500">reliable.</em>
         </h3>
-        <p className="mt-1 text-sm text-zinc-500">Open to frontend and full-stack roles.</p>
+        <p className="mt-1 text-sm text-zinc-500">Open to full-stack and frontend roles.</p>
       </div>
       <a href={`mailto:${PROFILE.email}`} className="shrink-0" tabIndex={-1}>
         <PillButton className="text-sm">CONNECT WITH ME</PillButton>

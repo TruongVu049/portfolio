@@ -49,7 +49,7 @@ export default function Contact({ index = '06' }) {
             eyebrow="Contact"
             title="Let's work"
             accent="together."
-            description="Hiring for a frontend or full-stack role, or want to talk through a product? Send me a message and I will get back to you."
+            description="Hiring for a full-stack or frontend role, or want to talk through a product? Send me a message and I will get back to you."
             compact
           />
           <Reveal delay={0.1} className="mb-8 flex flex-wrap items-center gap-x-10 gap-y-3 text-sm">

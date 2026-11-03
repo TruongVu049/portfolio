@@ -6,10 +6,10 @@ export const PROFILE = {
   firstName: 'Truong Vu',
   lastName: 'Nguyen',
   initials: 'TV',
-  role: 'Frontend Engineer',
-  focus: 'React · Next.js · TypeScript',
+  role: 'Full-stack Developer',
+  focus: 'React · Next.js · Node.js',
   tagline: { plain: 'Commerce, POS and enterprise apps', script: 'that keep working when things fail.' },
-  positioning: 'Frontend engineer with hands-on full-stack experience: offline-first POS, payments and enterprise workflows.',
+  positioning: 'Full-stack developer with a strong frontend core and production backend work since 2026: offline-first POS, payments and enterprise workflows.',
   location: 'Ho Chi Minh City, Vietnam',
   locationShort: 'HCMC, VN',
   timeZone: 'Asia/Ho_Chi_Minh',
@@ -24,21 +24,21 @@ export const PROFILE = {
   },
 }
 
-export const BADGE_TEXT = 'FRONTEND ENGINEER • REACT • NEXT.JS • '
+export const BADGE_TEXT = 'FULL-STACK DEVELOPER • REACT • NODE.JS • '
 
 export const TERMINAL_LINES = [
   { kind: 'type', text: '$ whoami' },
   { kind: 'line', text: '✔ ~2 yrs frontend · commerce, POS, ERP' },
-  { kind: 'line', text: '✔ ~1 yr backend · Node.js, Medusa, PostgreSQL' },
-  { kind: 'type', text: 'next → full-stack → software architecture', muted: true },
+  { kind: 'line', text: '✔ backend in production since Jul 2026 · Medusa' },
+  { kind: 'type', text: 'next → deeper backend → system design', muted: true },
 ]
 
 export const ABOUT = {
   intro:
     "I'm a software developer who enjoys turning complex business requirements into practical, maintainable web applications.",
   paragraphs: [
-    'My main expertise is frontend development with React, Next.js and TypeScript. Working on real-world products has made me increasingly interested in how software systems operate beyond the user interface.',
-    "I'm currently strengthening my knowledge of Node.js, backend architecture, PostgreSQL and system design. My long-term goal is to grow into an engineer who can understand, design and build reliable software systems end to end.",
+    'My strongest area is frontend development with React, Next.js and TypeScript. Since July 2026 I have also owned backend modules in production: payments, messaging and fulfilment on a Medusa v2 commerce platform.',
+    "I'm still early on the backend side, so I keep studying Node.js, PostgreSQL and system design alongside the work. My long-term goal is to grow into an engineer who can understand, design and build reliable software systems end to end.",
   ],
   chapters: [
     {
@@ -54,7 +54,7 @@ export const ABOUT = {
     {
       n: '03',
       title: 'Engineering Growth',
-      body: 'Deliberately building backend, database, DevOps and system design knowledge on the way to full-stack engineering, and later software architecture.',
+      body: 'Deepening backend, database, DevOps and system design knowledge, from my first production modules toward software architecture.',
     },
   ],
   // `project` links a topic to the case study where it was applied in production.
@@ -93,7 +93,7 @@ export const EXPERIENCE = [
     from: 'Late 2025',
     to: 'Present',
     icon: 'server',
-    body: 'About a year of backend: structured self-study from late 2025, then main developer of PowerShop since July 2026, a Medusa v2 commerce platform now in production.',
+    body: 'About six months of structured self-study, then my first production backend role: main developer of PowerShop since July 2026, a Medusa v2 commerce platform live since October 2026.',
     highlights: [
       'Built payment, shipping and affiliate workflows on Medusa v2 with PostgreSQL, Redis and RabbitMQ.',
       'Designed the outbox and inbox integration with a commission engine owned by another team.',
@@ -138,5 +138,5 @@ export const MARQUEE_WORDS = ['RELIABLE', 'SCALABLE', 'USER-FOCUSED', 'MAINTAINA
 export const FOOTER = {
   headline: 'Turning complex business requirements into',
   accent: 'reliable, maintainable software.',
-  blurb: 'Frontend today, full-stack next, and always curious about how the whole system fits together.',
+  blurb: 'Strong on the frontend, growing on the backend, and always curious about how the whole system fits together.',
 }
