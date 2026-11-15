@@ -48,7 +48,7 @@
   --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(148 170 200 / 0.55) 0%, rgb(51 65 85 / 0.55) 32%,
       rgb(8 11 20 / 0.95) 68%, #04060b 100%);
   --orb-border: rgb(255 255 255 / 0.15);
-  --signature-glow: rgb(59 130 246 / 0.55);
+  --signature-glow: rgb(59 130 246 / 0.3);
   --grain-opacity: 0.5;
   --horizon-rim: rgb(191 219 254 / 0.75);
   --horizon-rim-glow: rgb(147 197 253 / 0.35);
@@ -98,7 +98,7 @@ body.light {
   --orb-glass: radial-gradient(120% 90% at 50% 100%, rgb(147 197 253 / 0.55) 0%, rgb(219 234 254 / 0.7) 38%,
       rgb(255 255 255 / 0.92) 75%, #ffffff 100%);
   --orb-border: rgb(37 99 235 / 0.2);
-  --signature-glow: rgb(96 165 250 / 0.45);
+  --signature-glow: rgb(96 165 250 / 0.25);
   --grain-opacity: 0.35;
   --horizon-rim: rgb(37 99 235 / 0.55);
   --horizon-rim-glow: rgb(59 130 246 / 0.25);

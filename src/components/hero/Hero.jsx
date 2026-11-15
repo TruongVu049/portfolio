@@ -8,11 +8,10 @@ import {
 } from "framer-motion"
 import { ArrowDownRight, Download, MapPin } from "lucide-react"
 import { FiGithub, FiLinkedin } from "react-icons/fi"
-import { PROFILE, TERMINAL_LINES } from "../../data/profile"
+import { PROFILE } from "../../data/profile"
 import { scrollToId } from "../../hooks/useLenis"
 import LiveClock from "../about/LiveClock"
 import SignatureText from "./SignatureText"
-import Terminal from "./Terminal"
 import ScrollBadge from "./ScrollBadge"
 import CursorSpotlight from "./CursorSpotlight"
 import SpaceScene from "./space/SpaceScene"
@@ -46,7 +45,7 @@ const HORIZON_DISC =
   "absolute left-1/2 top-[calc(100%-10rem)] aspect-square w-[150vw] -translate-x-1/2 rounded-full sm:top-[calc(100%-11.5rem)] lg:top-[calc(100%-12.5rem)]"
 
 /**
- * Lit, curved horizon the terminal rises out of. The viewport-sized wrapper carries
+ * Lit, curved horizon the hero settles onto. The viewport-sized wrapper carries
  * the motion and clips the oversized circle, so no huge layer is ever animated.
  */
 function Horizon() {
@@ -71,7 +70,7 @@ function Horizon() {
 
 function StatusPill() {
   return (
-    <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2.5 pr-4 font-mono text-xs uppercase tracking-[0.2em] text-zinc-300 shadow-[0_0_30px_-8px_rgba(59,130,246,0.5)]">
+    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2.5 pr-4 font-mono text-[11px] uppercase tracking-[0.14em] max-[359px]:gap-1.5 max-[359px]:pr-3 max-[359px]:text-[10px] max-[359px]:tracking-[0.06em] text-zinc-300 shadow-[0_0_30px_-8px_rgba(59,130,246,0.5)] sm:gap-2.5 sm:text-xs sm:tracking-[0.2em]">
       <span aria-hidden="true" className="relative flex h-2 w-2">
         {PROFILE.available && (
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -80,16 +79,9 @@ function StatusPill() {
           className={`relative inline-flex h-2 w-2 rounded-full ${PROFILE.available ? "bg-emerald-400" : "bg-amber-400"}`}
         />
       </span>
-      {/* Availability is spelled out on wide screens and always for screen readers. */}
-      <span className="sr-only xl:not-sr-only">
-        {PROFILE.available ? "Open to work" : "Currently busy"}
-      </span>
-      <span className="hidden text-zinc-500 xl:inline">/</span>
-      {/* The signature is decorative script, so the name is also set in plain type here. */}
-      <span className="hidden text-zinc-100 sm:inline">{`${PROFILE.firstName} ${PROFILE.lastName}`}</span>
-      <span className="hidden text-zinc-500 sm:inline">/</span>
+      <span>{PROFILE.available ? "Open to work" : "Currently busy"}</span>
+      <span aria-hidden="true" className="text-zinc-500">·</span>
       <span className="text-accent-soft">{PROFILE.role}</span>
-      <span className="hidden text-zinc-400 lg:inline">· {PROFILE.focus}</span>
     </span>
   )
 }
@@ -142,6 +134,21 @@ function HeroActions() {
   )
 }
 
+/**
+ * The signature is decorative script, so the name is also set in plain type,
+ * beside the monogram in the top-left corner, for a reader who only skims.
+ */
+function Nameplate() {
+  return (
+    <motion.p
+      {...fadeUp(PITCH_DELAY_S, 6)}
+      className="pointer-events-none absolute left-[4.5rem] top-6 z-20 flex h-10 max-[359px]:hidden items-center text-sm font-semibold tracking-tight text-zinc-100 sm:left-[4.75rem] sm:text-[15px]"
+    >
+      {PROFILE.firstName} {PROFILE.lastName}
+    </motion.p>
+  )
+}
+
 function CornerMeta() {
   return (
     <motion.div
@@ -185,6 +192,7 @@ export default function Hero() {
       className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black"
     >
       <AuroraBackdrop />
+      <Nameplate />
       <SpaceScene scrollYProgress={scrollYProgress} revealed={introDone} />
       <CursorSpotlight containerRef={sectionRef} />
 
@@ -249,25 +257,6 @@ export default function Hero() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {introDone && (
-          <motion.div
-            key="terminal"
-            initial={{ opacity: 0, y: 80 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.4, delay: SCENE_DELAY.terminal, ease: EASE }}
-            className="absolute bottom-0 left-1/2 z-30 w-[min(92vw,22rem)] -translate-x-1/2 sm:w-[min(58vw,36rem)] lg:w-[34rem]"
-          >
-            <Terminal
-              lines={TERMINAL_LINES}
-              className="h-32 shadow-[0_-12px_50px_-16px_rgba(59,130,246,0.55)] sm:h-36"
-            />
-            {/* Fades the window's side borders out at the section edge. */}
-            <div className="pointer-events-none absolute -inset-x-1 bottom-0 h-14 bg-linear-to-t from-black to-transparent" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {introDone && <CornerMeta key="meta" />}
       </AnimatePresence>
 
@@ -278,7 +267,7 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, delay: SCENE_DELAY.scrollBadge, ease: EASE }}
-            className="absolute bottom-[8.5rem] right-3 z-40 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-10"
+            className="absolute bottom-5 right-3 z-40 sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-10"
           >
             <div className="sm:hidden">
               <ScrollBadge size={76} />
