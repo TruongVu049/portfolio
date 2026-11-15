@@ -8,7 +8,6 @@
  */
 export const SCENE_DELAY = {
   horizon: 0,
-  terminal: 0.25,
   planet: 0.4,
   satellite: 0.55,
   astronaut: 0.7,

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useInView, useReducedMotion } from 'framer-motion'
 
 const TYPE_INTERVAL_MS = 45
 const LINE_PAUSE_MS = 260
@@ -37,35 +38,47 @@ function TerminalLine({ line, active, onDone }) {
   )
 }
 
-/** macOS-style terminal that reveals its lines one after another. */
+/**
+ * macOS-style terminal that types its lines one after another once it scrolls
+ * into view. Lines not reached yet are laid out invisibly, so the window keeps
+ * its final height and nothing below it moves while it types.
+ */
 export default function Terminal({ lines, className = '' }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, amount: 0.6 })
+  const reduceMotion = useReducedMotion()
   const [activeIndex, setActiveIndex] = useState(0)
+  const reached = reduceMotion ? lines.length : isInView ? activeIndex : -1
 
   return (
     <div
-      className={`terminal-shell keep-dark relative w-full overflow-hidden rounded-t-xl border-x border-t border-zinc-800 bg-black text-white ${className}`}
+      ref={ref}
+      className={`keep-dark relative w-full overflow-hidden rounded-xl border border-zinc-800 bg-black text-white ${className}`}
     >
       <style>{'@keyframes terminal-line-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}'}</style>
-      <div className="terminal-head flex gap-2 border-b border-zinc-800 p-3">
+      <div aria-hidden="true" className="flex gap-2 border-b border-zinc-800 p-3">
         <span className="h-3 w-3 rounded-full bg-red-500" />
         <span className="h-3 w-3 rounded-full bg-yellow-500" />
         <span className="h-3 w-3 rounded-full bg-green-500" />
       </div>
-      <pre className="overflow-hidden p-4 font-mono">
+      <pre className="overflow-hidden whitespace-pre-wrap p-4 font-mono">
         <code className="flex flex-col gap-1">
           {lines.map((line, i) =>
-            i <= activeIndex ? (
+            i <= reached ? (
               <TerminalLine
                 key={line.text}
-                line={line}
-                active={i === activeIndex}
+                line={reduceMotion ? { ...line, kind: 'line' } : line}
+                active={i === reached}
                 onDone={() => setActiveIndex((current) => (current === i ? i + 1 : current))}
               />
-            ) : null,
+            ) : (
+              <span key={line.text} className="invisible block text-sm tracking-tight">
+                {line.text}
+              </span>
+            ),
           )}
         </code>
       </pre>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black to-transparent md:h-12" />
     </div>
   )
 }

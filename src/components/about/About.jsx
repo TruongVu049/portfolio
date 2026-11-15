@@ -4,11 +4,12 @@ import GlowCard from '../ui/GlowCard'
 import SectionHeading from '../ui/SectionHeading'
 import PillButton from '../ui/PillButton'
 import ScrollRevealText from '../ui/ScrollRevealText'
-import { ABOUT, PROFILE } from '../../data/profile'
+import { ABOUT, PROFILE, TERMINAL_LINES } from '../../data/profile'
 import { findProject } from '../../data/projects'
 import { caseStudyHref } from '../../hooks/useCaseStudyRoute'
 import ProfileCard from './ProfileCard'
 import Chapters from './Chapters'
+import Terminal from './Terminal'
 
 const LEARNING_ICONS = { server: Server, database: Database, network: Network, container: Container }
 
@@ -96,6 +97,9 @@ export default function About() {
               </Reveal>
             ))}
           </div>
+          <Reveal className="mt-10 max-w-xl">
+            <Terminal lines={TERMINAL_LINES} className="shadow-[0_20px_60px_-24px_rgba(59,130,246,0.45)]" />
+          </Reveal>
           <Chapters chapters={ABOUT.chapters} label="Strength" />
           <Learning />
           <ConnectBanner />

@@ -56,7 +56,7 @@ export default function SignatureText({ onDone }) {
           <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
         <filter id="signature-blur" x="-10%" y="-30%" width="120%" height="160%">
-          <feGaussianBlur stdDeviation="12" />
+          <feGaussianBlur stdDeviation="8" />
         </filter>
         <clipPath id="signature-clip">
           <text {...TEXT_PROPS}>{name}</text>
